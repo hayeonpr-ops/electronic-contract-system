@@ -473,16 +473,6 @@ body{
 }
 
 /* ── 접속 상태 표시 ── */
-#session-bar{
-  position:fixed;top:72px;left:0;right:0;z-index:99;
-  background:linear-gradient(90deg,rgba(16,185,129,.9),rgba(5,150,105,.9));
-  color:#fff;font-size:13px;font-weight:600;
-  padding:10px 24px;display:none;
-  align-items:center;justify-content:space-between;
-  backdrop-filter:blur(8px);
-}
-#session-bar.show{display:flex}
-
 /* ── 업무제휴 섹션 ── */
 #partnership{
   padding:100px 40px;
@@ -580,14 +570,6 @@ body{
 <canvas id="bg-canvas"></canvas>
 
 <!-- 세션 상태 바 -->
-<div id="session-bar">
-  <div id="session-info">✓ 로그인됨</div>
-  <div style="display:flex;gap:10px">
-    <button onclick="goToDashboard()" style="padding:6px 16px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);border-radius:8px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">대시보드 열기 →</button>
-    <button onclick="doLogout()" style="padding:6px 12px;background:transparent;border:1px solid rgba(255,255,255,.2);border-radius:8px;color:rgba(255,255,255,.7);font-size:12px;cursor:pointer;font-family:inherit">로그아웃</button>
-  </div>
-</div>
-
 <!-- 네비게이션 -->
 <nav id="nav">
   <div class="nav-logo">
@@ -1032,7 +1014,7 @@ function closeLogin(){
 }
 
 function scrollTo(selector){
-  document.querySelector(selector)?.scrollIntoView({behavior:'smooth'});
+  // 구형 호환용 (사용 안 함)
 }
 
 // ─────────────────────────────────────────────────────
@@ -1172,7 +1154,6 @@ function showForgot(){
 // ─────────────────────────────────────────────────────
 function doLogout(){
   AuthDB.clearSession();
-  document.getElementById('session-bar').classList.remove('show');
   window.location.reload();
 }
 
@@ -1206,14 +1187,7 @@ function hashPW(pw){
 // ─────────────────────────────────────────────────────
 // 세션 체크 (이미 로그인된 경우 상태바 표시)
 // ─────────────────────────────────────────────────────
-function checkSession(){
-  const session = AuthDB.getSession();
-  if(!session) return;
-  const bar = document.getElementById('session-bar');
-  const info = document.getElementById('session-info');
-  bar.classList.add('show');
-  info.innerHTML = `✓ <strong>${session.name}</strong> (${session.company}) · <span style="background:rgba(255,255,255,.15);padding:2px 8px;border-radius:10px;font-size:11px">${(session.plan||'starter').toUpperCase()}</span>`;
-}
+// checkSession 제거됨 (세션 상태바 삭제)
 
 // ─────────────────────────────────────────────────────
 // 배경 파티클 애니메이션
@@ -1317,9 +1291,13 @@ function initCountUp(){
 function smoothTo(id){
   const el = document.getElementById(id);
   if(!el) return;
-  const offset = 64; // 네비 높이
-  const top = el.getBoundingClientRect().top + window.scrollY - offset;
-  window.scrollTo({top, behavior:'smooth'});
+  const navH = document.getElementById('nav')?.offsetHeight || 64;
+  const top = el.getBoundingClientRect().top + window.pageYOffset - navH - 8;
+  window.history.replaceState(null,'',location.pathname+location.search);
+  // window.scrollTo가 덮어쓰여 있을 수 있으므로 scrollTo 대신 직접 접근
+  document.documentElement.scrollTo ? 
+    document.documentElement.scrollTo({top, behavior:'smooth'}) :
+    window.scroll({top, behavior:'smooth'});
 }
 
 // ─────────────────────────────────────────────────────
@@ -1459,33 +1437,61 @@ const DEFAULT_PLANS = [
 function renderPricing(){
   const grid = document.getElementById('pricing-grid');
   if(!grid) return;
+
   let plans;
   try {
     const saved = localStorage.getItem('sa_pricing');
-    plans = saved ? JSON.parse(saved) : DEFAULT_PLANS;
+    if(saved) {
+      plans = JSON.parse(saved);
+      // features 배열 없으면 featuresOk/No 문자열에서 복원
+      plans = plans.map(p => ({
+        ...p,
+        btnStyle:  p.btnStyle  || (p.featured ? 'fill' : 'outline'),
+        btnAction: p.btnAction || "openLogin('register')",
+        features:  Array.isArray(p.features) && p.features.length > 0
+          ? p.features
+          : [
+              ...(p.featuresOk||'').split('\n').filter(s=>s.trim()).map(s=>({ok:true, text:s.trim()})),
+              ...(p.featuresNo||'').split('\n').filter(s=>s.trim()).map(s=>({ok:false,text:s.trim()})),
+            ],
+      }));
+    } else {
+      plans = DEFAULT_PLANS;
+    }
   } catch(e){ plans = DEFAULT_PLANS; }
+
   try {
     const cfg = JSON.parse(localStorage.getItem('sa_config') || '{}');
-    if(cfg.pricingTitle) document.getElementById('pricing-title').textContent = cfg.pricingTitle;
-    if(cfg.pricingSub)   document.getElementById('pricing-sub').textContent   = cfg.pricingSub;
+    if(cfg.pricingTitle){ const el=document.getElementById('pricing-title'); if(el) el.textContent=cfg.pricingTitle; }
+    if(cfg.pricingSub){   const el=document.getElementById('pricing-sub');   if(el) el.textContent=cfg.pricingSub; }
   } catch(e){}
-  grid.innerHTML = plans.filter(p => p.visible !== false).map(p => `
-    <div class="pricing-card ${p.featured ? 'featured' : ''}">
-      ${p.badge ? `<div class="pricing-badge">${p.badge}</div>` : ''}
-      <div class="pricing-name">${p.name}</div>
-      <div class="pricing-price">${p.price}<span> ${p.unit}</span></div>
-      <div class="pricing-desc">${p.desc}</div>
-      <hr class="pricing-divider">
-      ${p.features.map(f => f.ok
-        ? `<div class="pricing-feature"><div class="pricing-feature-dot">&#10003;</div>${f.text}</div>`
-        : `<div class="pricing-feature"><div class="pricing-feature-dot" style="background:rgba(255,255,255,.05);color:rgba(255,255,255,.2)">&#10007;</div><span style="color:rgba(255,255,255,.25)">${f.text}</span></div>`
-      ).join('')}
-      <button class="pricing-btn pricing-btn-${p.btnStyle}" onclick="${p.btnAction}">${p.btnText}</button>
-    </div>
-  `).join('');
+
+  const visible = plans.filter(p => p.visible !== false);
+  grid.innerHTML = visible.map(p => {
+    const feats = (p.features||[]).map(f =>
+      f.ok
+        ? '<div class="pricing-feature"><div class="pricing-feature-dot">&#10003;</div>' + (f.text||'') + '</div>'
+        : '<div class="pricing-feature"><div class="pricing-feature-dot" style="background:rgba(255,255,255,.05);color:rgba(255,255,255,.2)">&#10007;</div><span style="color:rgba(255,255,255,.25)">' + (f.text||'') + '</span></div>'
+    ).join('');
+
+    const badgeHtml = p.badge ? '<div class="pricing-badge">' + p.badge + '</div>' : '';
+    const btnStyle  = p.btnStyle  || (p.featured ? 'fill' : 'outline');
+    const btnAction = p.btnAction || "openLogin('register')";
+
+    return '<div class="pricing-card ' + (p.featured ? 'featured' : '') + '">'
+      + badgeHtml
+      + '<div class="pricing-name">'  + (p.name||'')  + '</div>'
+      + '<div class="pricing-price">' + (p.price||'') + '<span> ' + (p.unit||'') + '</span></div>'
+      + '<div class="pricing-desc">'  + (p.desc||'')  + '</div>'
+      + '<hr class="pricing-divider">'
+      + feats
+      + '<button class="pricing-btn pricing-btn-' + btnStyle + '" onclick="' + btnAction + '">' + (p.btnText||'시작하기') + '</button>'
+      + '</div>';
+  }).join('');
+
   grid.querySelectorAll('.pricing-card').forEach((el,i)=>{
     el.style.opacity='0'; el.style.transform='translateY(24px)';
-    el.style.transition=`all .5s ${i*.1}s ease`;
+    el.style.transition='all .5s '+(i*.1)+'s ease';
     setTimeout(()=>{ el.style.opacity='1'; el.style.transform='translateY(0)'; }, 50);
   });
 }
@@ -1532,7 +1538,6 @@ function loadSAConfig(){
 initBgCanvas();
 initScrollEffect();
 initCountUp();
-checkSession();
 loadSAConfig();
 renderPricing();
 

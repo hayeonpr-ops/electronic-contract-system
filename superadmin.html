@@ -953,16 +953,19 @@ function savePlans() {
     const visEl  = document.getElementById('pl-vis-'+i);
     const okVal  = document.getElementById('pl-ok-'+i)?.value || '';
     const noVal  = document.getElementById('pl-no-'+i)?.value || '';
+    const isFeatured = featEl ? featEl.checked : !!p.featured;
     return {
-      ...p,
+      id:         p.id || ('plan_'+i),
       name:       document.getElementById('pl-name-'+i)?.value  || p.name,
       price:      document.getElementById('pl-price-'+i)?.value || p.price,
       unit:       document.getElementById('pl-unit-'+i)?.value  || p.unit,
       badge:      document.getElementById('pl-badge-'+i)?.value || '',
       desc:       document.getElementById('pl-desc-'+i)?.value  || p.desc,
       btnText:    document.getElementById('pl-btn-'+i)?.value   || p.btnText,
-      featured:   featEl ? featEl.checked : !!p.featured,
-      visible:    visEl  ? visEl.checked  : p.visible !== false,
+      btnStyle:   p.btnStyle  || (isFeatured ? 'fill' : 'outline'),
+      btnAction:  p.btnAction || "openLogin('register')",
+      featured:   isFeatured,
+      visible:    visEl ? visEl.checked : p.visible !== false,
       featuresOk: okVal,
       featuresNo: noVal,
       features: [
