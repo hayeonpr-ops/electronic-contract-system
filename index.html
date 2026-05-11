@@ -598,7 +598,7 @@ body{
     <button class="nav-btn nav-btn-ghost" onclick="smoothTo('partnership')">업무제휴</button>
     <button class="nav-btn nav-btn-ghost" onclick="smoothTo('pricing')">요금제</button>
     <button class="nav-btn nav-btn-ghost" onclick="openLogin('login')">로그인</button>
-    <button class="nav-btn nav-btn-primary" onclick="openLogin('register')">무료 체험 시작 →</button>
+    <button class="nav-btn nav-btn-primary" onclick="openLogin('register')">회원가입 →</button>
   </div>
 </nav>
 
@@ -625,10 +625,10 @@ body{
 
   <div class="hero-cta">
     <button class="btn-hero-primary" onclick="openLogin('register')">
-      ⚡ 지금 무료로 시작하기
+      ⚡ 지금 바로 회원가입하기
     </button>
-    <button class="btn-hero-secondary" onclick="openLogin('demo')">
-      🎮 데모 체험하기
+    <button class="btn-hero-secondary" onclick="openLogin('login')">
+      🔐 로그인
     </button>
   </div>
 
@@ -857,12 +857,6 @@ body{
           <span style="font-size:12px;color:rgba(255,255,255,.3);cursor:pointer" onclick="showForgot()">비밀번호를 잊으셨나요?</span>
         </div>
         <button class="login-btn" onclick="doLogin()" id="btn-login">로그인</button>
-        <div class="login-divider">또는</div>
-        <div style="text-align:center">
-          <button onclick="doDemo()" style="background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.12);border-radius:12px;color:rgba(255,255,255,.6);font-size:13px;font-weight:600;padding:11px 24px;cursor:pointer;font-family:inherit;width:100%;transition:all .15s" onmouseover="this.style.background='rgba(255,255,255,.1)'" onmouseout="this.style.background='rgba(255,255,255,.06)'">
-            🎮 데모 계정으로 체험하기
-          </button>
-        </div>
         <div class="login-footer-text">
           계정이 없으신가요? <a onclick="switchTab('register')">회원가입</a>
         </div>
@@ -1018,9 +1012,8 @@ function openLogin(tab='login'){
   const overlay = document.getElementById('login-overlay');
   overlay.classList.add('show');
   clearMessages();
-  if(tab === 'register' || tab === 'demo'){
-    if(tab === 'demo'){ switchTab('login'); doDemo(); }
-    else switchTab('register');
+  if(tab === 'register'){
+    switchTab('register');
   } else if(tab === 'contact'){
     switchTab('login');
     showMsg('도입 문의는 아래 이메일로 연락해 주세요: contractos@company.com', 'success');
@@ -1427,7 +1420,7 @@ const DEFAULT_PLANS = [
       {ok:true, text:'QR 출석체크'},
       {ok:false,text:'사전안내문'},
     ],
-    btnText:'무료로 시작하기', btnStyle:'outline', btnAction:"openLogin('register')",
+    btnText:'지금 바로 회원가입하기', btnStyle:'outline', btnAction:"openLogin('register')",
     visible:true
   },
   {
