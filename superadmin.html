@@ -559,27 +559,54 @@ function rSett(){
   const subs=DB.get('subscribers');
   const lics=DB.get('licenses');
   const logs=DB.get('logs');
+  // 요금제 데이터 로드
+  let plans;
+  try{ plans=JSON.parse(localStorage.getItem('sa_pricing')||'null')||getDefaultPlans(); }catch(e){ plans=getDefaultPlans(); }
+
   return `
   <div class="page-title" style="margin-bottom:16px">⚙️ 시스템 설정</div>
+
+  <!-- 기본 정보 -->
   <div class="card">
     <div style="font-size:14px;font-weight:700;margin-bottom:14px">🏢 서비스 기본 정보</div>
     <div class="g2"><div class="form-group"><label class="form-label">서비스명</label><input class="form-input" id="cfg-svc" value="${cfg.serviceName||'ContractOS'}"></div><div class="form-group"><label class="form-label">개발사명</label><input class="form-input" id="cfg-dev" value="${cfg.devName||'Worklo 워클로'}"></div></div>
     <div class="g2"><div class="form-group"><label class="form-label">지원 이메일</label><input class="form-input" id="cfg-email" value="${cfg.supportEmail||''}" placeholder="support@contractos.kr"></div><div class="form-group"><label class="form-label">지원 전화</label><input class="form-input" id="cfg-tel" value="${cfg.supportTel||''}" placeholder="010-0000-0000"></div></div>
     <div class="form-group"><label class="form-label">서비스 URL</label><input class="form-input" id="cfg-url" value="${cfg.serviceUrl||''}" placeholder="https://contractos.co.kr"></div>
-    <div style="font-size:13px;font-weight:700;margin:14px 0 10px;border-top:1px solid var(--border);padding-top:12px">💳 플랜 기본 요금</div>
-    <div class="g3"><div class="form-group"><label class="form-label">STARTER (원/월)</label><input class="form-input" type="number" id="cfg-fs" value="${cfg.feeStarter||0}"></div><div class="form-group"><label class="form-label">PRO (원/월)</label><input class="form-input" type="number" id="cfg-fp" value="${cfg.feePro||49000}"></div><div class="form-group"><label class="form-label">ENTERPRISE (원/월)</label><input class="form-input" type="number" id="cfg-fe" value="${cfg.feeEnt||150000}"></div></div>
-    <button class="btn btn-p" onclick="saveCfg()">설정 저장</button>
+    <div class="g2">
+      <div class="form-group"><label class="form-label">요금제 섹션 제목</label><input class="form-input" id="cfg-ptitle" value="${cfg.pricingTitle||'합리적인 요금제'}" placeholder="합리적인 요금제"></div>
+      <div class="form-group"><label class="form-label">요금제 부제</label><input class="form-input" id="cfg-psub" value="${cfg.pricingSub||'무료로 시작하고, 성장에 맞춰 업그레이드하세요.'}" placeholder="부제 문구"></div>
+    </div>
+    <button class="btn btn-p" onclick="saveCfg()">💾 기본 정보 저장</button>
   </div>
+
+  <!-- 요금제 편집기 -->
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:14px;font-weight:700">💳 요금제 편집 <span style="font-size:11px;background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:10px;font-weight:600;margin-left:6px">홈페이지 자동 반영</span></div>
+      <button class="btn btn-g btn-sm" onclick="resetPlans()">↺ 기본값 초기화</button>
+    </div>
+    <div id="plans-editor">${renderPlansEditor(plans)}</div>
+    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-p" onclick="savePlans()">💾 요금제 저장 → 홈페이지 반영</button>
+      <button class="btn btn-g" onclick="previewPlans()">👁 미리보기 (홈페이지 새탭)</button>
+    </div>
+    <div style="margin-top:10px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 14px;font-size:12px;color:#1d4ed8">
+      💡 저장 후 홈페이지(index.html)를 새로고침하면 즉시 반영됩니다. 기능 항목은 ✓ 포함 / ✕ 미포함으로 구분하며, 줄바꿈으로 여러 항목을 입력하세요.
+    </div>
+  </div>
+
+  <!-- 슈퍼관리자 계정 -->
   <div class="card" style="background:#fffbeb;border-color:#fde68a">
     <div style="font-size:14px;font-weight:700;margin-bottom:8px">🔐 슈퍼 관리자 계정</div>
     <div style="font-size:12px;color:var(--amber-t);margin-bottom:12px">⚠️ 계정 변경은 superadmin.html 파일 내 SA_ACCOUNTS 배열을 직접 수정하세요</div>
     <div style="background:var(--navy2);border-radius:8px;padding:12px 14px;font-family:monospace;font-size:12px;color:#93c5fd;line-height:1.9">
       const SA_ACCOUNTS = [<br>
       &nbsp; { id: <span style="color:#fde68a">'superadmin'</span>, pw: <span style="color:#6ee7b7">'dlalwls486!!'</span>, name: <span style="color:#fde68a">'개발자 (Worklo)'</span> },<br>
-      &nbsp; <span style="color:#64748b">// 개발자 추가 시 위 패턴으로 항목 추가</span><br>
       ];
     </div>
   </div>
+
+  <!-- 데이터 현황 -->
   <div class="card">
     <div style="font-size:14px;font-weight:700;margin-bottom:12px">📊 전체 데이터 현황</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:14px">
@@ -591,6 +618,93 @@ function rSett(){
     </div>
   </div>`;
 }
+
+// ── 요금제 기본값 ──────────────────────────────────
+function getDefaultPlans(){
+  return [
+    {id:'starter',name:'STARTER',badge:'',featured:false,price:'무료',unit:'/ 월',desc:'소규모 행사 운영자를 위한 기본 플랜',featuresOk:'월 행사 2건\n월 계약 20건\n계약서 템플릿 1개\nQR 출석체크',featuresNo:'사전안내문',btnText:'무료로 시작하기',btnStyle:'outline',btnAction:"openLogin('register')",visible:true},
+    {id:'pro',name:'PRO',badge:'인기',featured:true,price:'49,000',unit:'원 / 월',desc:'전문 행사 운영업체를 위한 핵심 플랜',featuresOk:'월 행사 무제한\n월 계약 300건\n계약서 템플릿 무제한\nQR 출석체크\n사전안내문 + 카카오 공유\n엑셀·PDF 자동화\n통계 대시보드',featuresNo:'',btnText:'PRO 시작하기 →',btnStyle:'fill',btnAction:"openLogin('register')",visible:true},
+    {id:'enterprise',name:'ENTERPRISE',badge:'',featured:false,price:'문의',unit:'/ 월',desc:'대형 이벤트사·프랜차이즈를 위한 맞춤 플랜',featuresOk:'계약 무제한\n다수 관리자 계정\n카카오 알림톡 연동\n급여 정산 자동화\n전담 고객 지원\n커스텀 브랜딩',featuresNo:'',btnText:'도입 문의하기',btnStyle:'outline',btnAction:"openLogin('contact')",visible:true},
+  ];
+}
+
+// ── 요금제 편집기 HTML 생성 ────────────────────────
+function renderPlansEditor(plans){
+  return plans.map((p,i)=>`
+  <div style="border:1.5px solid ${p.featured?'var(--blue)':'var(--border)'};border-radius:12px;padding:16px;margin-bottom:12px;background:${p.featured?'#eff6ff':'var(--surface2)'}">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div style="font-size:13px;font-weight:700;color:${p.featured?'var(--blue)':'var(--t1)'}">${p.featured?'⭐ ':''}플랜 ${i+1}: ${p.name}</div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--t2);cursor:pointer">
+          <input type="checkbox" id="pl-feat-${i}" ${p.featured?'checked':''} style="accent-color:var(--blue)"> 인기 플랜
+        </label>
+        <label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--t2);cursor:pointer">
+          <input type="checkbox" id="pl-vis-${i}" ${p.visible!==false?'checked':''} style="accent-color:var(--green)"> 표시
+        </label>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">
+      <div class="form-group" style="margin-bottom:0"><label class="form-label">플랜명</label><input class="form-input" id="pl-name-${i}" value="${p.name}"></div>
+      <div class="form-group" style="margin-bottom:0"><label class="form-label">가격 표시</label><input class="form-input" id="pl-price-${i}" value="${p.price}" placeholder="49,000 또는 무료 또는 문의"></div>
+      <div class="form-group" style="margin-bottom:0"><label class="form-label">단위</label><input class="form-input" id="pl-unit-${i}" value="${p.unit}" placeholder="원 / 월"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div class="form-group" style="margin-bottom:0"><label class="form-label">배지 문구 (인기뱃지)</label><input class="form-input" id="pl-badge-${i}" value="${p.badge||''}" placeholder="인기 (비워두면 숨김)"></div>
+      <div class="form-group" style="margin-bottom:0"><label class="form-label">버튼 텍스트</label><input class="form-input" id="pl-btn-${i}" value="${p.btnText}"></div>
+    </div>
+    <div class="form-group" style="margin-bottom:10px"><label class="form-label">플랜 설명</label><input class="form-input" id="pl-desc-${i}" value="${p.desc}"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">✓ 포함 기능 (줄바꿈으로 구분)</label>
+        <textarea class="form-input" id="pl-ok-${i}" style="min-height:90px;resize:vertical;font-size:12px">${p.featuresOk||''}</textarea>
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">✕ 미포함 기능 (줄바꿈으로 구분)</label>
+        <textarea class="form-input" id="pl-no-${i}" style="min-height:90px;resize:vertical;font-size:12px">${p.featuresNo||''}</textarea>
+      </div>
+    </div>
+  </div>`).join('');
+}
+
+// ── 요금제 저장 ────────────────────────────────────
+function savePlans(){
+  let plans;
+  try{ plans=JSON.parse(localStorage.getItem('sa_pricing')||'null')||getDefaultPlans(); }catch(e){ plans=getDefaultPlans(); }
+  const saved = plans.map((p,i)=>({
+    ...p,
+    name: document.getElementById('pl-name-'+i)?.value || p.name,
+    price: document.getElementById('pl-price-'+i)?.value || p.price,
+    unit: document.getElementById('pl-unit-'+i)?.value || p.unit,
+    badge: document.getElementById('pl-badge-'+i)?.value || '',
+    desc: document.getElementById('pl-desc-'+i)?.value || p.desc,
+    btnText: document.getElementById('pl-btn-'+i)?.value || p.btnText,
+    featured: document.getElementById('pl-feat-'+i)?.checked || false,
+    visible: document.getElementById('pl-vis-'+i)?.checked !== false,
+    featuresOk: document.getElementById('pl-ok-'+i)?.value || '',
+    featuresNo: document.getElementById('pl-no-'+i)?.value || '',
+    features: [
+      ...(document.getElementById('pl-ok-'+i)?.value||'').split('\n').filter(s=>s.trim()).map(s=>({ok:true,text:s.trim()})),
+      ...(document.getElementById('pl-no-'+i)?.value||'').split('\n').filter(s=>s.trim()).map(s=>({ok:false,text:s.trim()})),
+    ]
+  }));
+  localStorage.setItem('sa_pricing', JSON.stringify(saved));
+  addLog('요금제 수정', saved.map(p=>p.name).join('/'), 'ok');
+  toast('✅ 요금제 저장 완료! 홈페이지를 새로고침하면 바로 반영됩니다','ok');
+}
+
+function resetPlans(){
+  if(!confirm('요금제를 기본값으로 초기화할까요?')) return;
+  localStorage.removeItem('sa_pricing');
+  toast('요금제가 초기화되었습니다','ok');
+  showTab('settings');
+}
+
+function previewPlans(){
+  const cfg = JSON.parse(localStorage.getItem('sa_config')||'{}');
+  const url = cfg.serviceUrl || location.href.replace('superadmin.html','index.html');
+  window.open(url + '#pricing', '_blank');
+}
+
 function saveCfg(){
   const cfg={
     serviceName:document.getElementById('cfg-svc')?.value,
@@ -598,15 +712,13 @@ function saveCfg(){
     supportEmail:document.getElementById('cfg-email')?.value,
     supportTel:document.getElementById('cfg-tel')?.value,
     serviceUrl:document.getElementById('cfg-url')?.value,
-    feeStarter:document.getElementById('cfg-fs')?.value,
-    feePro:document.getElementById('cfg-fp')?.value,
-    feeEnt:document.getElementById('cfg-fe')?.value,
+    pricingTitle:document.getElementById('cfg-ptitle')?.value,
+    pricingSub:document.getElementById('cfg-psub')?.value,
   };
   DB.setObj('config',cfg);
-  // index.html, contract-saas.html 에서 읽는 sa_config 키에도 저장
   localStorage.setItem('sa_config', JSON.stringify(cfg));
   addLog('시스템 설정 변경','config','ok');
-  toast('✅ 설정 저장 완료 — 홈페이지(index.html)를 새로고침하면 반영됩니다','ok');
+  toast('✅ 설정 저장 완료 — 홈페이지를 새로고침하면 반영됩니다','ok');
 }
 function exportData(){
   const data={subscribers:DB.get('subscribers'),licenses:DB.get('licenses'),logs:DB.get('logs'),config:DB.getObj('config'),exportedAt:new Date().toISOString()};

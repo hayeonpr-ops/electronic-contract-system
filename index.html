@@ -482,6 +482,96 @@ body{
   backdrop-filter:blur(8px);
 }
 #session-bar.show{display:flex}
+
+/* ── 업무제휴 섹션 ── */
+#partnership{
+  padding:100px 40px;
+  background:linear-gradient(180deg,var(--navy2) 0%,var(--navy) 100%);
+  position:relative;overflow:hidden;
+}
+#partnership::before{
+  content:'';position:absolute;top:-100px;right:-100px;
+  width:500px;height:500px;border-radius:50%;
+  background:radial-gradient(circle,rgba(59,110,240,.08),transparent 70%);
+  pointer-events:none;
+}
+.partner-wrap{max-width:900px;margin:0 auto}
+.partner-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;margin-top:50px}
+.partner-info{display:flex;flex-direction:column;gap:20px}
+.partner-info-card{
+  display:flex;align-items:flex-start;gap:16px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+  border-radius:16px;padding:18px 20px;transition:all .2s;
+}
+.partner-info-card:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.14);transform:translateX(4px)}
+.partner-info-icon{
+  width:44px;height:44px;border-radius:12px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:20px;
+}
+.pi-blue{background:rgba(59,110,240,.2)}
+.pi-green{background:rgba(16,185,129,.2)}
+.pi-amber{background:rgba(245,158,11,.2)}
+.partner-info-body{}
+.partner-info-title{font-size:13px;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:.04em;margin-bottom:4px}
+.partner-info-val{font-size:15px;font-weight:600;color:#fff}
+.partner-info-val a{color:#93c5fd;text-decoration:none}
+.partner-info-val a:hover{color:#bfdbfe;text-decoration:underline}
+
+.partner-form{
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:22px;padding:32px;
+}
+.partner-form-title{font-size:18px;font-weight:800;color:#fff;margin-bottom:6px;letter-spacing:-.3px}
+.partner-form-sub{font-size:13px;color:rgba(255,255,255,.4);margin-bottom:24px;line-height:1.6}
+.pf-group{margin-bottom:14px}
+.pf-label{display:block;font-size:11px;font-weight:700;color:rgba(255,255,255,.4);letter-spacing:.06em;margin-bottom:6px}
+.pf-input,.pf-select,.pf-textarea{
+  width:100%;padding:12px 16px;
+  background:rgba(255,255,255,.07);
+  border:1.5px solid rgba(255,255,255,.1);
+  border-radius:12px;color:#fff;font-size:14px;font-family:'Freesentation',sans-serif;
+  outline:none;transition:all .2s;
+}
+.pf-input::placeholder,.pf-textarea::placeholder{color:rgba(255,255,255,.2)}
+.pf-input:focus,.pf-select:focus,.pf-textarea:focus{
+  border-color:rgba(59,110,240,.7);
+  background:rgba(59,110,240,.12);
+  box-shadow:0 0 0 4px rgba(59,110,240,.15);
+}
+.pf-select{appearance:none;cursor:pointer}
+.pf-select option{background:#1e2d4a;color:#fff}
+.pf-textarea{resize:vertical;min-height:100px;line-height:1.7}
+.pf-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pf-submit{
+  width:100%;padding:14px;margin-top:6px;
+  background:linear-gradient(135deg,var(--blue),var(--blue2));
+  border:none;border-radius:14px;
+  color:#fff;font-size:15px;font-weight:800;font-family:'Freesentation',sans-serif;
+  cursor:pointer;transition:all .2s;
+  box-shadow:0 6px 24px rgba(59,110,240,.4);letter-spacing:-.2px;
+}
+.pf-submit:hover{transform:translateY(-1px);box-shadow:0 10px 32px rgba(59,110,240,.5)}
+.pf-submit:active{transform:scale(.98)}
+.pf-submit:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.pf-result{
+  margin-top:14px;border-radius:12px;padding:14px 16px;
+  font-size:13px;font-weight:600;text-align:center;display:none;line-height:1.6;
+}
+.pf-result.ok{background:rgba(16,185,129,.18);border:1px solid rgba(16,185,129,.35);color:#6ee7b7}
+.pf-result.err{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#fca5a5}
+.partner-badge-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:32px}
+.partner-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
+  border-radius:20px;padding:7px 16px;font-size:12px;font-weight:600;color:rgba(255,255,255,.7);
+}
+@media(max-width:768px){
+  #partnership{padding:60px 20px}
+  .partner-grid{grid-template-columns:1fr;gap:28px}
+  .pf-row{grid-template-columns:1fr}
+  .partner-form{padding:22px 18px}
+}
 </style>
 </head>
 <body>
@@ -505,8 +595,8 @@ body{
     <div class="nav-logo-text">Contract<span>OS</span></div>
   </div>
   <div class="nav-right">
-    <button class="nav-btn nav-btn-ghost" onclick="scrollTo('#features')">기능</button>
-    <button class="nav-btn nav-btn-ghost" onclick="scrollTo('#pricing')">요금제</button>
+    <button class="nav-btn nav-btn-ghost" onclick="smoothTo('partnership')">업무제휴</button>
+    <button class="nav-btn nav-btn-ghost" onclick="smoothTo('pricing')">요금제</button>
     <button class="nav-btn nav-btn-ghost" onclick="openLogin('login')">로그인</button>
     <button class="nav-btn nav-btn-primary" onclick="openLogin('register')">무료 체험 시작 →</button>
   </div>
@@ -613,51 +703,112 @@ body{
 <!-- 요금제 -->
 <section id="pricing">
   <div class="section-label">PRICING</div>
-  <h2 class="section-title">합리적인 요금제</h2>
-  <p class="section-sub">무료로 시작하고, 성장에 맞춰 업그레이드하세요.</p>
+  <h2 class="section-title" id="pricing-title">합리적인 요금제</h2>
+  <p class="section-sub" id="pricing-sub">무료로 시작하고, 성장에 맞춰 업그레이드하세요.</p>
+  <div class="pricing-grid" id="pricing-grid"></div>
+</section>
 
-  <div class="pricing-grid">
-    <div class="pricing-card">
-      <div class="pricing-name">STARTER</div>
-      <div class="pricing-price">무료<span> / 월</span></div>
-      <div class="pricing-desc">소규모 행사 운영자를 위한 기본 플랜</div>
-      <hr class="pricing-divider">
-      <div class="pricing-feature"><div class="pricing-feature-dot">✓</div>월 행사 2건</div>
-      <div class="pricing-feature"><div class="pricing-feature-dot">✓</div>월 계약 20건</div>
-      <div class="pricing-feature"><div class="pricing-feature-dot">✓</div>계약서 템플릿 1개</div>
-      <div class="pricing-feature"><div class="pricing-feature-dot">✓</div>QR 출석체크</div>
-      <div class="pricing-feature"><div class="pricing-feature-dot" style="background:rgba(255,255,255,.05);color:rgba(255,255,255,.2)">✕</div><span style="color:rgba(255,255,255,.25)">사전안내문</span></div>
-      <button class="pricing-btn pricing-btn-outline" onclick="openLogin('register')">무료로 시작하기</button>
+<!-- 업무제휴 -->
+<section id="partnership">
+  <div class="partner-wrap">
+    <div style="text-align:center">
+      <div class="section-label">PARTNERSHIP</div>
+      <h2 class="section-title">함께 성장하는<br>비즈니스 파트너십</h2>
+      <p class="section-sub">ContractOS와 업무제휴를 통해 더 큰 가치를 만들어가세요.<br>이벤트사·HR플랫폼·프리랜서 플랫폼 등 다양한 분야에서 협력합니다.</p>
+      <div class="partner-badge-row" style="justify-content:center">
+        <div class="partner-badge">🤝 리셀러 파트너</div>
+        <div class="partner-badge">🔗 API 연동</div>
+        <div class="partner-badge">🏢 기업 도입</div>
+        <div class="partner-badge">📣 마케팅 협력</div>
+      </div>
     </div>
 
-    <div class="pricing-card featured">
-      <div class="pricing-badge">인기</div>
-      <div class="pricing-name">PRO</div>
-      <div class="pricing-price">49,000<span>원 / 월</span></div>
-      <div class="pricing-desc">전문 행사 운영업체를 위한 핵심 플랜</div>
-      <hr class="pricing-divider">
-      <div class="pricing-feature"><div class="pricing-feature-dot">✓</div>월 행사 무제한</div>
-      <div class="pricing-feature"><div class="pricing-feature-dot">✓</div>월 계약 300건</div>
-      <div class="pricing-feature"><div class="pricing-feature-dot">✓</div>계약서 템플릿 무제한</div>
-      <div class="pricing-feature"><div class="pricing-feature-dot">✓</div>QR 출석체크</div>
-      <div class="pricing-feature"><div class="pricing-feature-dot">✓</div>사전안내문 + 카카오 공유</div>
-      <div class="pricing-feature"><div class="pricing-feature-dot">✓</div>엑셀·PDF 자동화</div>
-      <div class="pricing-feature"><div class="pricing-feature-dot">✓</div>통계 대시보드</div>
-      <button class="pricing-btn pricing-btn-fill" onclick="openLogin('register')">PRO 시작하기 →</button>
-    </div>
+    <div class="partner-grid">
+      <!-- 연락처 정보 -->
+      <div class="partner-info">
+        <div style="font-size:17px;font-weight:800;color:#fff;letter-spacing:-.3px;margin-bottom:6px">
+          업무제휴 담당자
+        </div>
+        <div style="font-size:13px;color:rgba(255,255,255,.45);margin-bottom:20px;line-height:1.7">
+          아래 채널로 먼저 연락주시면<br>빠르게 검토 후 회신드립니다.
+        </div>
 
-    <div class="pricing-card">
-      <div class="pricing-name">ENTERPRISE</div>
-      <div class="pricing-price">문의<span> / 월</span></div>
-      <div class="pricing-desc">대형 이벤트사·프랜차이즈를 위한 맞춤 플랜</div>
-      <hr class="pricing-divider">
-      <div class="pricing-feature"><div class="pricing-feature-dot">✓</div>계약 무제한</div>
-      <div class="pricing-feature"><div class="pricing-feature-dot">✓</div>다수 관리자 계정</div>
-      <div class="pricing-feature"><div class="pricing-feature-dot">✓</div>카카오 알림톡 연동</div>
-      <div class="pricing-feature"><div class="pricing-feature-dot">✓</div>급여 정산 자동화</div>
-      <div class="pricing-feature"><div class="pricing-feature-dot">✓</div>전담 고객 지원</div>
-      <div class="pricing-feature"><div class="pricing-feature-dot">✓</div>커스텀 브랜딩</div>
-      <button class="pricing-btn pricing-btn-outline" onclick="openLogin('contact')">도입 문의하기</button>
+        <div class="partner-info-card">
+          <div class="partner-info-icon pi-blue">🏢</div>
+          <div class="partner-info-body">
+            <div class="partner-info-title">서비스 제공사</div>
+            <div class="partner-info-val" id="pi-company">Worklo 워클로</div>
+          </div>
+        </div>
+        <div class="partner-info-card">
+          <div class="partner-info-icon pi-green">📧</div>
+          <div class="partner-info-body">
+            <div class="partner-info-title">업무제휴 이메일</div>
+            <div class="partner-info-val">
+              <a href="mailto:partner@contractos.kr" id="pi-email">partner@contractos.kr</a>
+            </div>
+          </div>
+        </div>
+        <div class="partner-info-card">
+          <div class="partner-info-icon pi-amber">📞</div>
+          <div class="partner-info-body">
+            <div class="partner-info-title">전화 문의</div>
+            <div class="partner-info-val" id="pi-tel">054-000-0000</div>
+          </div>
+        </div>
+
+        <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px 18px;margin-top:4px">
+          <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,.4);margin-bottom:8px;letter-spacing:.04em">응답 시간</div>
+          <div style="font-size:14px;color:rgba(255,255,255,.75);line-height:1.8">
+            📅 평일 09:00 ~ 18:00<br>
+            ⏱ 접수 후 <strong style="color:#6ee7b7">1영업일 이내</strong> 회신
+          </div>
+        </div>
+      </div>
+
+      <!-- 문의 폼 -->
+      <div class="partner-form">
+        <div class="partner-form-title">✉️ 업무제휴 문의</div>
+        <div class="partner-form-sub">양식을 작성하시면 담당자가 직접 연락드립니다.</div>
+
+        <div class="pf-row">
+          <div class="pf-group">
+            <label class="pf-label">회사명 *</label>
+            <input class="pf-input" id="pf-company" placeholder="(주)이벤트컴퍼니">
+          </div>
+          <div class="pf-group">
+            <label class="pf-label">담당자 이름 *</label>
+            <input class="pf-input" id="pf-name" placeholder="홍길동">
+          </div>
+        </div>
+        <div class="pf-group">
+          <label class="pf-label">이메일 *</label>
+          <input class="pf-input" id="pf-email" type="email" placeholder="contact@company.com">
+        </div>
+        <div class="pf-group">
+          <label class="pf-label">전화번호</label>
+          <input class="pf-input" id="pf-tel" type="tel" placeholder="010-0000-0000">
+        </div>
+        <div class="pf-group">
+          <label class="pf-label">제휴 유형</label>
+          <select class="pf-select" id="pf-type">
+            <option value="">선택해주세요</option>
+            <option value="reseller">리셀러 / 대리점 파트너</option>
+            <option value="api">API 연동 / 기술 협력</option>
+            <option value="enterprise">기업 도입 문의</option>
+            <option value="marketing">마케팅 / 홍보 협력</option>
+            <option value="investment">투자 / 전략적 제휴</option>
+            <option value="other">기타</option>
+          </select>
+        </div>
+        <div class="pf-group">
+          <label class="pf-label">문의 내용 *</label>
+          <textarea class="pf-textarea" id="pf-msg" placeholder="제휴 목적, 회사 소개, 협력 방향 등을 자유롭게 작성해 주세요."></textarea>
+        </div>
+
+        <button class="pf-submit" id="pf-btn" onclick="sendPartnership()">📨 문의 발송하기</button>
+        <div class="pf-result" id="pf-result"></div>
+      </div>
     </div>
   </div>
 </section>
@@ -1168,42 +1319,216 @@ function initCountUp(){
 }
 
 // ─────────────────────────────────────────────────────
-// 슈퍼관리자 설정 동기화
+// 스크롤 함수 (네비 높이 보정)
 // ─────────────────────────────────────────────────────
+function smoothTo(id){
+  const el = document.getElementById(id);
+  if(!el) return;
+  const offset = 64; // 네비 높이
+  const top = el.getBoundingClientRect().top + window.scrollY - offset;
+  window.scrollTo({top, behavior:'smooth'});
+}
+
+// ─────────────────────────────────────────────────────
+// 업무제휴 문의 발송
+// ─────────────────────────────────────────────────────
+function sendPartnership(){
+  const company = document.getElementById('pf-company')?.value.trim();
+  const name = document.getElementById('pf-name')?.value.trim();
+  const email = document.getElementById('pf-email')?.value.trim();
+  const tel = document.getElementById('pf-tel')?.value.trim();
+  const type = document.getElementById('pf-type')?.value;
+  const msg = document.getElementById('pf-msg')?.value.trim();
+  const result = document.getElementById('pf-result');
+  const btn = document.getElementById('pf-btn');
+
+  if(!company || !name || !email || !msg){
+    result.className = 'pf-result err';
+    result.style.display = 'block';
+    result.textContent = '회사명, 담당자명, 이메일, 문의내용은 필수 항목입니다.';
+    return;
+  }
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    result.className = 'pf-result err';
+    result.style.display = 'block';
+    result.textContent = '올바른 이메일 주소를 입력해주세요.';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '⏳ 발송 중...';
+
+  // 담당자 이메일 주소 가져오기 (SA 설정 우선)
+  const cfg = JSON.parse(localStorage.getItem('sa_config') || '{}');
+  const toEmail = cfg.supportEmail || 'partner@contractos.kr';
+
+  const typeLabels = {
+    reseller:'리셀러/대리점', api:'API 연동/기술협력',
+    enterprise:'기업 도입', marketing:'마케팅/홍보',
+    investment:'투자/전략제휴', other:'기타'
+  };
+
+  // mailto 방식으로 이메일 클라이언트 열기
+  const subject = encodeURIComponent(`[ContractOS 업무제휴 문의] ${company} - ${typeLabels[type]||'일반'}`);
+  const body = encodeURIComponent(
+`=== ContractOS 업무제휴 문의 ===
+
+회사명: ${company}
+담당자: ${name}
+이메일: ${email}
+전화번호: ${tel || '미입력'}
+제휴 유형: ${typeLabels[type] || '미선택'}
+문의일시: ${new Date().toLocaleString('ko-KR')}
+
+--- 문의 내용 ---
+${msg}
+
+===========================
+본 메일은 ContractOS 홈페이지 업무제휴 폼에서 발송되었습니다.`
+  );
+
+  // 문의 내용을 localStorage에도 저장 (슈퍼관리자에서 확인 가능)
+  try {
+    const inquiries = JSON.parse(localStorage.getItem('sa_inquiries') || '[]');
+    inquiries.push({id: Date.now().toString(36), company, name, email, tel, type, msg, createdAt: new Date().toISOString()});
+    localStorage.setItem('sa_inquiries', JSON.stringify(inquiries));
+  } catch(e){}
+
+  // mailto 링크 열기
+  window.location.href = `mailto:${toEmail}?subject=${subject}&body=${body}`;
+
+  // 완료 상태로 변경
+  setTimeout(() => {
+    btn.disabled = false;
+    btn.textContent = '📨 문의 발송하기';
+    result.className = 'pf-result ok';
+    result.style.display = 'block';
+    result.innerHTML = `✅ 이메일 앱이 열렸습니다.<br>발송 완료 후 <strong>1영업일 이내</strong> 회신 드립니다.<br><span style="font-size:12px;opacity:.7">이메일 앱이 열리지 않으면 직접 <strong>${toEmail}</strong>으로 보내주세요.</span>`;
+    // 폼 초기화
+    ['pf-company','pf-name','pf-email','pf-tel','pf-msg'].forEach(id => {
+      const el = document.getElementById(id); if(el) el.value = '';
+    });
+    document.getElementById('pf-type').value = '';
+  }, 800);
+}
+
+// ─────────────────────────────────────────────────────
+// 요금제 기본값 & 동적 렌더
+// ─────────────────────────────────────────────────────
+const DEFAULT_PLANS = [
+  {
+    id:'starter', name:'STARTER', badge:'', featured:false,
+    price:'무료', unit:'/ 월',
+    desc:'소규모 행사 운영자를 위한 기본 플랜',
+    features:[
+      {ok:true, text:'월 행사 2건'},
+      {ok:true, text:'월 계약 20건'},
+      {ok:true, text:'계약서 템플릿 1개'},
+      {ok:true, text:'QR 출석체크'},
+      {ok:false,text:'사전안내문'},
+    ],
+    btnText:'무료로 시작하기', btnStyle:'outline', btnAction:"openLogin('register')",
+    visible:true
+  },
+  {
+    id:'pro', name:'PRO', badge:'인기', featured:true,
+    price:'49,000', unit:'원 / 월',
+    desc:'전문 행사 운영업체를 위한 핵심 플랜',
+    features:[
+      {ok:true, text:'월 행사 무제한'},
+      {ok:true, text:'월 계약 300건'},
+      {ok:true, text:'계약서 템플릿 무제한'},
+      {ok:true, text:'QR 출석체크'},
+      {ok:true, text:'사전안내문 + 카카오 공유'},
+      {ok:true, text:'엑셀·PDF 자동화'},
+      {ok:true, text:'통계 대시보드'},
+    ],
+    btnText:'PRO 시작하기 →', btnStyle:'fill', btnAction:"openLogin('register')",
+    visible:true
+  },
+  {
+    id:'enterprise', name:'ENTERPRISE', badge:'', featured:false,
+    price:'문의', unit:'/ 월',
+    desc:'대형 이벤트사·프랜차이즈를 위한 맞춤 플랜',
+    features:[
+      {ok:true, text:'계약 무제한'},
+      {ok:true, text:'다수 관리자 계정'},
+      {ok:true, text:'카카오 알림톡 연동'},
+      {ok:true, text:'급여 정산 자동화'},
+      {ok:true, text:'전담 고객 지원'},
+      {ok:true, text:'커스텀 브랜딩'},
+    ],
+    btnText:'도입 문의하기', btnStyle:'outline', btnAction:"openLogin('contact')",
+    visible:true
+  }
+];
+
+function renderPricing(){
+  const grid = document.getElementById('pricing-grid');
+  if(!grid) return;
+  let plans;
+  try {
+    const saved = localStorage.getItem('sa_pricing');
+    plans = saved ? JSON.parse(saved) : DEFAULT_PLANS;
+  } catch(e){ plans = DEFAULT_PLANS; }
+  try {
+    const cfg = JSON.parse(localStorage.getItem('sa_config') || '{}');
+    if(cfg.pricingTitle) document.getElementById('pricing-title').textContent = cfg.pricingTitle;
+    if(cfg.pricingSub)   document.getElementById('pricing-sub').textContent   = cfg.pricingSub;
+  } catch(e){}
+  grid.innerHTML = plans.filter(p => p.visible !== false).map(p => `
+    <div class="pricing-card ${p.featured ? 'featured' : ''}">
+      ${p.badge ? `<div class="pricing-badge">${p.badge}</div>` : ''}
+      <div class="pricing-name">${p.name}</div>
+      <div class="pricing-price">${p.price}<span> ${p.unit}</span></div>
+      <div class="pricing-desc">${p.desc}</div>
+      <hr class="pricing-divider">
+      ${p.features.map(f => f.ok
+        ? `<div class="pricing-feature"><div class="pricing-feature-dot">&#10003;</div>${f.text}</div>`
+        : `<div class="pricing-feature"><div class="pricing-feature-dot" style="background:rgba(255,255,255,.05);color:rgba(255,255,255,.2)">&#10007;</div><span style="color:rgba(255,255,255,.25)">${f.text}</span></div>`
+      ).join('')}
+      <button class="pricing-btn pricing-btn-${p.btnStyle}" onclick="${p.btnAction}">${p.btnText}</button>
+    </div>
+  `).join('');
+  grid.querySelectorAll('.pricing-card').forEach((el,i)=>{
+    el.style.opacity='0'; el.style.transform='translateY(24px)';
+    el.style.transition=`all .5s ${i*.1}s ease`;
+    setTimeout(()=>{ el.style.opacity='1'; el.style.transform='translateY(0)'; }, 50);
+  });
+}
+
 function loadSAConfig(){
   try {
     const cfg = JSON.parse(localStorage.getItem('sa_config') || '{}');
     if(!cfg || Object.keys(cfg).length === 0) return;
-
     // 서비스명
     if(cfg.serviceName){
       document.title = cfg.serviceName + ' — 행사 전자계약 자동화 플랫폼';
-      // 네비 로고
       const navLogo = document.querySelector('.nav-logo-text');
       if(navLogo) navLogo.innerHTML = cfg.serviceName.replace(/OS$/,'<span>OS</span>');
-      // 로그인 모달 제목
       const loginTitle = document.querySelector('.login-title');
       if(loginTitle) loginTitle.textContent = cfg.serviceName;
-      // 히어로 제목 변경하지 않음 (마케팅 문구)
     }
     // 개발사명
     if(cfg.devName){
-      // 푸터 회사명
       const footerSub = document.querySelector('#footer > div > div:last-child');
       if(footerSub) footerSub.textContent = cfg.devName;
-      // 저작권
       const copy = document.querySelector('.footer-copy');
       if(copy) copy.textContent = '© 2025 ' + (cfg.serviceName||'ContractOS') + ' · ' + cfg.devName;
-      // 라이선스 화면 회사명
-      const licContact = document.getElementById('license-contact-company');
-      if(licContact) licContact.textContent = cfg.devName;
+      const piCompany = document.getElementById('pi-company');
+      if(piCompany) piCompany.textContent = cfg.devName;
     }
     // 지원 이메일
     if(cfg.supportEmail){
-      const emailEls = document.querySelectorAll('[data-sa-email]');
-      emailEls.forEach(el => el.textContent = cfg.supportEmail);
       const licEmail = document.getElementById('license-contact-email');
       if(licEmail) licEmail.textContent = cfg.supportEmail;
+      const piEmail = document.getElementById('pi-email');
+      if(piEmail){ piEmail.textContent = cfg.supportEmail; piEmail.href = 'mailto:' + cfg.supportEmail; }
+    }
+    // 지원 전화
+    if(cfg.supportTel){
+      const piTel = document.getElementById('pi-tel');
+      if(piTel) piTel.textContent = cfg.supportTel;
     }
   } catch(e){}
 }
@@ -1216,6 +1541,7 @@ initScrollEffect();
 initCountUp();
 checkSession();
 loadSAConfig();
+renderPricing();
 
 // URL 파라미터로 자동 모달 열기
 const urlParams = new URLSearchParams(location.search);
