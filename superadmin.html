@@ -202,7 +202,7 @@ tr:hover td{background:var(--surface2)}
 </div>
 <div id="toast-wrap"></div>
 <script>
-const SA_ACCOUNTS=[{id:'superadmin',pw:'dlalwls486!!',name:'개발자 (따시델레)'}];
+const SA_ACCOUNTS=[{id:'superadmin',pw:'dlalwls486!!',name:'개발자 (Worklo)'}];
 const SA_KEY='cos_sa_session';
 const uid=()=>Math.random().toString(36).slice(2,10)+Date.now().toString(36);
 const fmt=d=>d?new Date(d).toLocaleDateString('ko-KR',{year:'numeric',month:'2-digit',day:'2-digit'}):'-';
@@ -563,7 +563,7 @@ function rSett(){
   <div class="page-title" style="margin-bottom:16px">⚙️ 시스템 설정</div>
   <div class="card">
     <div style="font-size:14px;font-weight:700;margin-bottom:14px">🏢 서비스 기본 정보</div>
-    <div class="g2"><div class="form-group"><label class="form-label">서비스명</label><input class="form-input" id="cfg-svc" value="${cfg.serviceName||'ContractOS'}"></div><div class="form-group"><label class="form-label">개발사명</label><input class="form-input" id="cfg-dev" value="${cfg.devName||'경상북도 청도 복합문화공간 따시델레'}"></div></div>
+    <div class="g2"><div class="form-group"><label class="form-label">서비스명</label><input class="form-input" id="cfg-svc" value="${cfg.serviceName||'ContractOS'}"></div><div class="form-group"><label class="form-label">개발사명</label><input class="form-input" id="cfg-dev" value="${cfg.devName||'Worklo 워클로'}"></div></div>
     <div class="g2"><div class="form-group"><label class="form-label">지원 이메일</label><input class="form-input" id="cfg-email" value="${cfg.supportEmail||''}" placeholder="support@contractos.kr"></div><div class="form-group"><label class="form-label">지원 전화</label><input class="form-input" id="cfg-tel" value="${cfg.supportTel||''}" placeholder="010-0000-0000"></div></div>
     <div class="form-group"><label class="form-label">서비스 URL</label><input class="form-input" id="cfg-url" value="${cfg.serviceUrl||''}" placeholder="https://contractos.co.kr"></div>
     <div style="font-size:13px;font-weight:700;margin:14px 0 10px;border-top:1px solid var(--border);padding-top:12px">💳 플랜 기본 요금</div>
@@ -575,7 +575,7 @@ function rSett(){
     <div style="font-size:12px;color:var(--amber-t);margin-bottom:12px">⚠️ 계정 변경은 superadmin.html 파일 내 SA_ACCOUNTS 배열을 직접 수정하세요</div>
     <div style="background:var(--navy2);border-radius:8px;padding:12px 14px;font-family:monospace;font-size:12px;color:#93c5fd;line-height:1.9">
       const SA_ACCOUNTS = [<br>
-      &nbsp; { id: <span style="color:#fde68a">'superadmin'</span>, pw: <span style="color:#6ee7b7">'dlalwls486!!'</span>, name: <span style="color:#fde68a">'개발자 (따시델레)'</span> },<br>
+      &nbsp; { id: <span style="color:#fde68a">'superadmin'</span>, pw: <span style="color:#6ee7b7">'dlalwls486!!'</span>, name: <span style="color:#fde68a">'개발자 (Worklo)'</span> },<br>
       &nbsp; <span style="color:#64748b">// 개발자 추가 시 위 패턴으로 항목 추가</span><br>
       ];
     </div>
@@ -592,9 +592,21 @@ function rSett(){
   </div>`;
 }
 function saveCfg(){
-  DB.setObj('config',{serviceName:document.getElementById('cfg-svc')?.value,devName:document.getElementById('cfg-dev')?.value,supportEmail:document.getElementById('cfg-email')?.value,supportTel:document.getElementById('cfg-tel')?.value,serviceUrl:document.getElementById('cfg-url')?.value,feeStarter:document.getElementById('cfg-fs')?.value,feePro:document.getElementById('cfg-fp')?.value,feeEnt:document.getElementById('cfg-fe')?.value});
+  const cfg={
+    serviceName:document.getElementById('cfg-svc')?.value,
+    devName:document.getElementById('cfg-dev')?.value,
+    supportEmail:document.getElementById('cfg-email')?.value,
+    supportTel:document.getElementById('cfg-tel')?.value,
+    serviceUrl:document.getElementById('cfg-url')?.value,
+    feeStarter:document.getElementById('cfg-fs')?.value,
+    feePro:document.getElementById('cfg-fp')?.value,
+    feeEnt:document.getElementById('cfg-fe')?.value,
+  };
+  DB.setObj('config',cfg);
+  // index.html, contract-saas.html 에서 읽는 sa_config 키에도 저장
+  localStorage.setItem('sa_config', JSON.stringify(cfg));
   addLog('시스템 설정 변경','config','ok');
-  toast('설정 저장됨','ok');
+  toast('✅ 설정 저장 완료 — 홈페이지(index.html)를 새로고침하면 반영됩니다','ok');
 }
 function exportData(){
   const data={subscribers:DB.get('subscribers'),licenses:DB.get('licenses'),logs:DB.get('logs'),config:DB.getObj('config'),exportedAt:new Date().toISOString()};

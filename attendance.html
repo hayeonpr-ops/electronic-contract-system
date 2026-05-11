@@ -56,7 +56,23 @@ html,body{height:100%;overflow:hidden;background:var(--bg);font-family:'Freesent
 
 /* ── 메인 그리드 ── */
 #main{flex:1;overflow:hidden;display:grid;grid-template-columns:1fr 1fr;gap:0}
-@media(max-width:700px){#main{grid-template-columns:1fr;grid-template-rows:auto 1fr}}
+@media(max-width:700px){
+  #main{grid-template-columns:1fr;grid-template-rows:auto 1fr;overflow-y:auto}
+  #scanner-panel{max-height:none;padding:12px}
+  #video-wrap{max-height:220px}
+  #list-panel{min-height:400px}
+  #list-scroll{max-height:50vh}
+  #event-bar{padding:8px 10px}
+  .ev-chip{padding:6px 12px;font-size:12px}
+  #header{padding:0 12px}
+  .btn-row{gap:8px}
+  #btn-in,#btn-out{padding:13px;font-size:14px}
+  .staff-card{flex-wrap:wrap;gap:8px}
+  .staff-status{width:100%;display:flex;align-items:center;justify-content:space-between}
+  .staff-btn-row{display:flex;gap:4px}
+  #bottom-bar{flex-wrap:wrap;gap:6px}
+  #summary-text{font-size:11px}
+}
 
 /* ── 왼쪽: 스캐너 패널 ── */
 #scanner-panel{

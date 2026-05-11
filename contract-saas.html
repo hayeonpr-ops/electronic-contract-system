@@ -191,13 +191,93 @@ input[type=range]{width:100%;accent-color:var(--blue)}
 .chip{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;background:var(--surface2);color:var(--t2);cursor:pointer;border:1.5px solid transparent;transition:all .15s}
 .chip.selected{background:var(--blue-light);color:var(--blue);border-color:var(--blue-mid)}
 .section-title{font-size:15px;font-weight:700;margin-bottom:14px;color:var(--t1);display:flex;align-items:center;gap:8px}
+
+/* ── 모바일 반응형 ── */
+#mobile-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99;backdrop-filter:blur(2px)}
+#btn-menu{display:none;background:none;border:none;cursor:pointer;padding:6px;color:var(--t1);font-size:22px;line-height:1}
+#btn-close-sidebar{display:none;background:none;border:none;color:rgba(255,255,255,.6);font-size:20px;cursor:pointer;padding:4px 8px;position:absolute;top:14px;right:12px}
+
+@media(max-width:768px){
+  #btn-menu{display:flex;align-items:center;justify-content:center}
+  #btn-close-sidebar{display:block}
+  #sidebar{transform:translateX(-100%);transition:transform .25s cubic-bezier(.4,0,.2,1);z-index:200}
+  #sidebar.open{transform:translateX(0);box-shadow:4px 0 24px rgba(0,0,0,.3)}
+  #mobile-overlay.show{display:block}
+  #main{margin-left:0}
+  #topbar{padding:0 14px;height:52px}
+  #content{padding:14px 12px}
+
+  /* 통계 그리드 1열 */
+  .stats-grid{grid-template-columns:1fr 1fr!important;gap:10px}
+  .stat-card{padding:14px}
+  .stat-value{font-size:22px}
+
+  /* 그리드 1열로 */
+  .grid2{grid-template-columns:1fr!important}
+  .form-row.cols2{grid-template-columns:1fr!important}
+  .form-row.cols3{grid-template-columns:1fr!important}
+  .att-grid{grid-template-columns:1fr!important}
+
+  /* 테이블 가로 스크롤 */
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  table{min-width:600px}
+  th,td{padding:8px 10px;font-size:12px}
+
+  /* 모달 풀스크린 */
+  .modal-overlay{padding:0;align-items:flex-end}
+  .modal{max-width:100%!important;border-radius:18px 18px 0 0;max-height:92vh}
+  .modal.modal-lg{max-width:100%!important}
+
+  /* 필터바 세로 */
+  .filter-bar{flex-direction:column}
+  .filter-bar .form-input,.filter-bar .form-select{max-width:100%!important;width:100%!important}
+
+  /* 페이지 헤더 세로 */
+  .page-header{flex-direction:column;align-items:flex-start}
+  .page-header>div:last-child{width:100%;display:flex;flex-wrap:wrap;gap:6px}
+  .page-header .btn{flex:1;justify-content:center;min-width:100px}
+
+  /* 탑바 버튼 간소화 */
+  .topbar-right .btn{padding:6px 10px;font-size:12px}
+  #topbar-title{font-size:14px}
+
+  /* 공지 그리드 */
+  .notice-grid{grid-template-columns:1fr!important}
+
+  /* 서명 캔버스 */
+  #sig-canvas{width:100%!important}
+
+  /* 출석 통계 */
+  .mini-stats{grid-template-columns:1fr 1fr 1fr}
+
+  /* att-grid 모바일 */
+  #att-video-wrap{max-height:200px}
+
+  /* 사이드바 전체 너비 조정 */
+  #sidebar{width:260px}
+
+  /* 탑바 우측 버튼 숨김 처리 */
+  #current-date{display:none}
+}
+
+@media(max-width:420px){
+  .stats-grid{grid-template-columns:1fr 1fr!important}
+  .stat-value{font-size:20px}
+  #content{padding:10px}
+  .card{padding:14px}
+  .mini-stats{grid-template-columns:1fr 1fr 1fr;gap:4px}
+  .mini-stat .n{font-size:18px}
+}
 </style>
 </head>
 <body>
 
+<div id="mobile-overlay" onclick="closeSidebar()"></div>
+
 <div id="app">
   <!-- Sidebar -->
   <nav id="sidebar">
+    <button id="btn-close-sidebar" onclick="closeSidebar()">✕</button>
     <div class="sb-logo">
       <div class="sb-logo-title">⚡ ContractOS</div>
       <div class="sb-logo-sub">전자근로계약 관리</div>
@@ -219,7 +299,7 @@ input[type=range]{width:100%;accent-color:var(--blue)}
     <div class="sb-bottom">
       <div id="sb-owner-info" style="margin-bottom:10px;padding:8px 10px;background:rgba(255,255,255,.06);border-radius:10px;cursor:pointer" onclick="openOwnerPanel()">
         <div style="font-size:10px;color:rgba(255,255,255,.35);font-weight:600;letter-spacing:.06em;margin-bottom:4px">🏢 서비스 제공사</div>
-        <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,.85)" id="sb-company-name">따시델레</div>
+        <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,.85)" id="sb-company-name">Worklo</div>
         <div style="font-size:10px;color:rgba(255,255,255,.4)" id="sb-company-tel">클릭하여 사업자 정보 관리</div>
       </div>
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
@@ -238,6 +318,7 @@ input[type=range]{width:100%;accent-color:var(--blue)}
   <!-- Main -->
   <div id="main">
     <div id="topbar">
+      <button id="btn-menu" onclick="openSidebar()">☰</button>
       <div>
         <div class="topbar-title" id="topbar-title">대시보드</div>
       </div>
@@ -500,7 +581,7 @@ input[type=range]{width:100%;accent-color:var(--blue)}
       <div style="background:linear-gradient(135deg,#0f172a,#1e3a8a);border-radius:14px;padding:20px;text-align:center;margin-bottom:20px">
         <div style="font-size:32px;margin-bottom:8px">🔒</div>
         <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:4px">소프트웨어 제공자 인증</div>
-        <div style="font-size:11px;color:rgba(255,255,255,.5)">ContractOS by 따시델레</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.5)">ContractOS by Worklo</div>
       </div>
       <div class="form-group">
         <label class="form-label">관리자 비밀번호</label>
@@ -532,7 +613,7 @@ input[type=range]{width:100%;accent-color:var(--blue)}
       <div class="grid2">
         <div class="form-group">
           <label class="form-label">회사명 / 브랜드명 *</label>
-          <input class="form-input" id="ow-company" placeholder="예: 경상북도 청도 복합문화공간 따시델레">
+          <input class="form-input" id="ow-company" placeholder="예: Worklo 워클로">
         </div>
         <div class="form-group">
           <label class="form-label">대표자명</label>
@@ -595,7 +676,7 @@ input[type=range]{width:100%;accent-color:var(--blue)}
     <div class="modal-body" style="padding:32px 28px;text-align:center">
       <div style="font-size:48px;margin-bottom:16px">⚡</div>
       <div style="font-size:22px;font-weight:900;color:#0f172a;margin-bottom:6px">ContractOS</div>
-      <div style="font-size:13px;color:#9aa5bb;margin-bottom:24px">경상북도 청도 복합문화공간 따시델레</div>
+      <div style="font-size:13px;color:#9aa5bb;margin-bottom:24px">Worklo 워클로</div>
       <div style="background:#f8f9fc;border:1.5px solid #e4e8f0;border-radius:14px;padding:20px;margin-bottom:20px;text-align:left">
         <div style="font-size:13px;font-weight:700;color:#1a2233;margin-bottom:12px">라이선스 인증</div>
         <div class="form-group" style="margin-bottom:0">
@@ -721,7 +802,34 @@ const fmt=d=>d?new Date(d).toLocaleDateString('ko-KR',{year:'numeric',month:'2-d
 const fmtDT=d=>d?new Date(d).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
 const money=n=>n?Number(n).toLocaleString()+'원':'';
 
-// ── Current page ───────────────────────────────────
+// ── 모바일 사이드바 ───────────────────────────────────
+function openSidebar(){
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('mobile-overlay').classList.add('show');
+  document.body.style.overflow='hidden';
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('mobile-overlay').classList.remove('show');
+  document.body.style.overflow='';
+}
+
+// ── 슈퍼관리자 설정 동기화 ────────────────────────────
+function loadSuperAdminConfig(){
+  // sa_config 키에서 슈퍼관리자 설정 읽기
+  try {
+    const cfg = JSON.parse(localStorage.getItem('sa_config') || '{}');
+    if(cfg.serviceName) document.title = cfg.serviceName + ' — 전자근로계약 관리';
+    // 사이드바 로고 업데이트
+    const logoEl = document.querySelector('.sb-logo-title');
+    if(logoEl && cfg.serviceName) logoEl.textContent = '⚡ ' + cfg.serviceName;
+    // 회사명 업데이트
+    const companyEl = document.getElementById('sb-company-name');
+    if(companyEl && cfg.devName) companyEl.textContent = cfg.devName;
+  } catch(e) {}
+}
+
+
 let currentPage = 'dashboard';
 let currentSignEvent = null;
 let currentSignStep = 1;
@@ -793,6 +901,8 @@ function seedData(){
 
 // ── Navigation ─────────────────────────────────────
 function navigate(page){
+  // 모바일에서 메뉴 선택 시 사이드바 닫기
+  closeSidebar();
   // 페이지 이동 시 카메라 정리
   if(attScanActive && page !== 'attendance'){
     attScanActive=false;
@@ -2506,7 +2616,7 @@ function verifyOwner(){
 
 function openOwnerEdit(){
   const info=getOwnerInfo();
-  document.getElementById('ow-company').value=info.company||'경상북도 청도 복합문화공간 따시델레';
+  document.getElementById('ow-company').value=info.company||'Worklo 워클로';
   document.getElementById('ow-ceo').value=info.ceo||'';
   document.getElementById('ow-biz-no').value=info.bizNo||'';
   document.getElementById('ow-tel').value=info.tel||'';
@@ -2562,7 +2672,7 @@ function updateSidebarOwner(info){
   const el=document.getElementById('sb-company-name');
   const el2=document.getElementById('sb-company-tel');
   const el3=document.getElementById('sb-admin-email');
-  if(el) el.textContent=info.company||'따시델레';
+  if(el) el.textContent=info.company||'Worklo';
   if(el2) el2.textContent=info.tel||'클릭하여 사업자 정보 관리';
   if(el3) el3.textContent=info.email||'admin@company.com';
 }
@@ -2602,6 +2712,8 @@ function init(){
     location.href = base + 'index.html';
     return;
   }
+  // 슈퍼관리자 설정 동기화
+  loadSuperAdminConfig();
   // 상단바에 사용자 정보 표시
   const adminNameEl = document.getElementById('sb-admin-name');
   const adminEmailEl = document.getElementById('sb-admin-email');
