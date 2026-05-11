@@ -1,0 +1,2629 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ContractOS — 전자근로계약 관리</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Freesentation:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f8f9fc;--surface:#ffffff;--surface2:#f1f4f9;
+  --border:#e4e8f0;--border2:#d0d7e6;
+  --navy:#0f172a;--blue:#3b6ef0;--blue-light:#eff3ff;--blue-mid:#dce7ff;
+  --teal:#0d9488;--teal-light:#f0fdfa;
+  --green:#10b981;--green-light:#ecfdf5;
+  --amber:#f59e0b;--amber-light:#fffbeb;
+  --red:#ef4444;--red-light:#fef2f2;
+  --purple:#8b5cf6;--purple-light:#f5f3ff;
+  --orange:#f97316;
+  --t1:#1a2233;--t2:#5a6a85;--t3:#9aa5bb;
+  --radius:10px;--radius-lg:14px;--shadow:0 1px 4px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);
+  --shadow-lg:0 4px 24px rgba(0,0,0,.10);
+}
+body{font-family:'Freesentation',sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;font-size:14px;line-height:1.6}
+
+/* ── Layout ── */
+#app{display:flex;min-height:100vh}
+#sidebar{width:220px;background:var(--navy);display:flex;flex-direction:column;flex-shrink:0;position:fixed;top:0;left:0;height:100vh;z-index:100}
+#main{margin-left:220px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+#topbar{height:56px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:12px;position:sticky;top:0;z-index:50}
+#content{padding:28px 28px;flex:1}
+
+/* ── Sidebar ── */
+.sb-logo{padding:20px 20px 16px;border-bottom:1px solid rgba(255,255,255,.08)}
+.sb-logo-title{font-size:17px;font-weight:700;color:#fff;letter-spacing:-.3px}
+.sb-logo-sub{font-size:11px;color:rgba(255,255,255,.4);margin-top:1px}
+.sb-section{padding:12px 12px 4px;font-size:10px;font-weight:600;color:rgba(255,255,255,.3);letter-spacing:.08em;text-transform:uppercase}
+.sb-item{display:flex;align-items:center;gap:10px;padding:9px 12px;margin:1px 8px;border-radius:8px;color:rgba(255,255,255,.65);cursor:pointer;font-size:13px;font-weight:500;transition:all .15s}
+.sb-item:hover{background:rgba(255,255,255,.08);color:#fff}
+.sb-item.active{background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(59,110,240,.4)}
+.sb-item .icon{width:18px;text-align:center;font-size:15px;flex-shrink:0}
+.sb-bottom{margin-top:auto;padding:12px;border-top:1px solid rgba(255,255,255,.08)}
+
+/* ── Topbar ── */
+.topbar-title{font-size:16px;font-weight:600;color:var(--t1)}
+.topbar-sub{font-size:12px;color:var(--t3);margin-left:4px}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--purple));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:600;font-family:inherit;transition:all .15s;white-space:nowrap}
+.btn-primary{background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(59,110,240,.3)}
+.btn-primary:hover{background:#2d5de0;transform:translateY(-1px);box-shadow:0 4px 12px rgba(59,110,240,.4)}
+.btn-secondary{background:var(--surface);color:var(--t1);border:1px solid var(--border)}
+.btn-secondary:hover{background:var(--surface2);border-color:var(--border2)}
+.btn-success{background:var(--green);color:#fff}
+.btn-success:hover{background:#0da572}
+.btn-danger{background:var(--red-light);color:var(--red);border:1px solid #fecaca}
+.btn-danger:hover{background:#fee2e2}
+.btn-ghost{background:transparent;color:var(--t2);border:1px solid transparent}
+.btn-ghost:hover{background:var(--surface2);border-color:var(--border)}
+.btn-sm{padding:5px 11px;font-size:12px}
+.btn-icon{padding:7px;border-radius:8px}
+
+/* ── Cards ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px}
+.card-sm{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px 20px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;right:0;width:80px;height:80px;border-radius:50%;transform:translate(20px,-20px);opacity:.08}
+.stat-card.blue::before{background:var(--blue)}
+.stat-card.green::before{background:var(--green)}
+.stat-card.amber::before{background:var(--amber)}
+.stat-card.purple::before{background:var(--purple)}
+.stat-label{font-size:12px;color:var(--t2);font-weight:500;margin-bottom:8px}
+.stat-value{font-size:26px;font-weight:700;color:var(--t1)}
+.stat-sub{font-size:12px;color:var(--t3);margin-top:4px}
+
+/* ── Badges ── */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-blue{background:var(--blue-light);color:var(--blue)}
+.badge-green{background:var(--green-light);color:#059669}
+.badge-amber{background:var(--amber-light);color:#b45309}
+.badge-red{background:var(--red-light);color:#dc2626}
+.badge-purple{background:var(--purple-light);color:#7c3aed}
+.badge-gray{background:var(--surface2);color:var(--t2)}
+.badge-teal{background:var(--teal-light);color:var(--teal)}
+
+/* ── Table ── */
+.table-wrap{overflow-x:auto;border-radius:var(--radius-lg);border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse}
+thead{background:var(--surface2)}
+th{padding:11px 14px;text-align:left;font-size:12px;font-weight:600;color:var(--t2);border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:11px 14px;border-bottom:1px solid var(--border);font-size:13px;color:var(--t1);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--surface2)}
+
+/* ── Forms ── */
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:12px;font-weight:600;color:var(--t2);margin-bottom:6px}
+.form-input,.form-select,.form-textarea{width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;color:var(--t1);background:var(--surface);transition:border-color .15s,box-shadow .15s;outline:none}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,110,240,.12)}
+.form-textarea{resize:vertical;min-height:100px}
+.form-row{display:grid;gap:14px}
+.form-row.cols2{grid-template-columns:1fr 1fr}
+.form-row.cols3{grid-template-columns:1fr 1fr 1fr}
+
+/* ── Modal ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);animation:fadeIn .15s}
+.modal{background:var(--surface);border-radius:18px;box-shadow:var(--shadow-lg);width:100%;max-width:580px;max-height:90vh;display:flex;flex-direction:column;animation:slideUp .2s}
+.modal-lg{max-width:780px}
+.modal-header{padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-title{font-size:16px;font-weight:700;color:var(--t1)}
+.modal-body{padding:20px 24px;overflow-y:auto;flex:1}
+.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;flex-shrink:0}
+.modal-close{background:var(--surface2);border:none;border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--t2);transition:all .15s}
+.modal-close:hover{background:var(--border);color:var(--t1)}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+/* ── Page headers ── */
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px}
+.page-title{font-size:20px;font-weight:700;color:var(--t1)}
+.page-sub{font-size:13px;color:var(--t3);margin-top:2px}
+
+/* ── Stats Grid ── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:24px}
+
+/* ── Filter bar ── */
+.filter-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.filter-bar .form-input,.filter-bar .form-select{width:auto;flex:1;min-width:120px}
+
+/* ── Signature Canvas ── */
+#sig-canvas{border:2px dashed var(--border2);border-radius:10px;cursor:crosshair;background:#fafbff;touch-action:none;display:block}
+
+/* ── Notice card ── */
+.notice-card{border-radius:var(--radius-lg);border:1px solid var(--border);overflow:hidden;background:var(--surface);transition:box-shadow .15s}
+.notice-card:hover{box-shadow:var(--shadow)}
+.notice-header{padding:14px 16px;background:var(--surface2);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.notice-body{padding:14px 16px}
+.notice-row{display:flex;gap:8px;align-items:center;font-size:13px;margin-bottom:8px}
+.notice-row:last-child{margin-bottom:0}
+.notice-icon{font-size:14px;width:20px;text-align:center;flex-shrink:0}
+.notice-label{font-size:11px;color:var(--t3);font-weight:600;width:52px;flex-shrink:0}
+
+/* ── QR section ── */
+.qr-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;display:inline-block}
+
+/* ── Tab bar ── */
+.tab-bar{display:flex;gap:2px;background:var(--surface2);border-radius:10px;padding:3px;margin-bottom:20px}
+.tab-item{flex:1;text-align:center;padding:7px 14px;border-radius:8px;font-size:13px;font-weight:500;color:var(--t2);cursor:pointer;transition:all .15s}
+.tab-item.active{background:var(--surface);color:var(--blue);box-shadow:0 1px 4px rgba(0,0,0,.08);font-weight:600}
+
+/* ── Sign page ── */
+.sign-page{max-width:520px;margin:0 auto;padding:20px}
+.sign-step{display:flex;gap:8px;margin-bottom:24px}
+.sign-step-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.sign-step-dot.done{background:var(--green);color:#fff}
+.sign-step-dot.active{background:var(--blue);color:#fff}
+.sign-step-dot.pending{background:var(--surface2);color:var(--t3)}
+
+/* ── Success animation ── */
+@keyframes pop{0%{transform:scale(0.6);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+.success-icon{animation:pop .5s cubic-bezier(.175,.885,.32,1.275)}
+
+/* ── Toast ── */
+#toast-container{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast{background:var(--navy);color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;font-weight:500;box-shadow:var(--shadow-lg);animation:slideUp .2s;display:flex;align-items:center;gap:8px}
+.toast.success{background:#059669}
+.toast.error{background:#dc2626}
+.toast.info{background:var(--blue)}
+
+/* ── Misc ── */
+.divider{border:none;border-top:1px solid var(--border);margin:16px 0}
+.text-sm{font-size:12px}.text-muted{color:var(--t3)}
+.flex{display:flex}.items-center{align-items:center}.justify-between{justify-content:space-between}.gap-8{gap:8px}.gap-12{gap:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.contract-preview{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;font-size:13px;line-height:1.9;max-height:300px;overflow-y:auto;white-space:pre-wrap}
+.link-box{background:var(--blue-light);border:1.5px solid var(--blue-mid);border-radius:8px;padding:10px 14px;font-size:12px;font-family:monospace;color:var(--blue);word-break:break-all;cursor:pointer;transition:background .15s}
+.link-box:hover{background:var(--blue-mid)}
+.empty-state{text-align:center;padding:48px 20px;color:var(--t3)}
+.empty-state .empty-icon{font-size:40px;margin-bottom:12px}
+.empty-state p{font-size:14px}
+.progress-bar{height:6px;background:var(--surface2);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;border-radius:3px;background:var(--green);transition:width .3s}
+input[type=range]{width:100%;accent-color:var(--blue)}
+.notice-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.chip-group{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chip{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;background:var(--surface2);color:var(--t2);cursor:pointer;border:1.5px solid transparent;transition:all .15s}
+.chip.selected{background:var(--blue-light);color:var(--blue);border-color:var(--blue-mid)}
+.section-title{font-size:15px;font-weight:700;margin-bottom:14px;color:var(--t1);display:flex;align-items:center;gap:8px}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <!-- Sidebar -->
+  <nav id="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-title">⚡ ContractOS</div>
+      <div class="sb-logo-sub">전자근로계약 관리</div>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:8px 0">
+      <div class="sb-section">관리</div>
+      <div class="sb-item active" onclick="navigate('dashboard')" id="nav-dashboard"><span class="icon">📊</span>대시보드</div>
+      <div class="sb-item" onclick="navigate('notice')" id="nav-notice"><span class="icon">📋</span>사전안내 관리</div>
+      <div class="sb-item" onclick="navigate('events')" id="nav-events"><span class="icon">🎪</span>행사 관리</div>
+      <div class="sb-item" onclick="navigate('contracts')" id="nav-contracts"><span class="icon">✍️</span>계약자 관리</div>
+      <div class="sb-item" onclick="navigate('attendance')" id="nav-attendance"><span class="icon">📡</span>QR 출석체크</div>
+      <div class="sb-item" onclick="openAttendancePage()" style="margin-left:8px;opacity:.8"><span class="icon">📱</span>전용화면 열기</div>
+      <div class="sb-section">설정</div>
+      <div class="sb-item" onclick="navigate('templates')" id="nav-templates"><span class="icon">📄</span>계약서 템플릿</div>
+      <div class="sb-item" onclick="navigate('stats')" id="nav-stats"><span class="icon">📈</span>통계</div>
+      <div class="sb-section">개발</div>
+      <div class="sb-item" onclick="showServerGuide()" style="background:rgba(59,110,240,.15);border:1px solid rgba(59,110,240,.3)"><span class="icon">🚀</span>서버 연동 가이드</div>
+    </div>
+    <div class="sb-bottom">
+      <div id="sb-owner-info" style="margin-bottom:10px;padding:8px 10px;background:rgba(255,255,255,.06);border-radius:10px;cursor:pointer" onclick="openOwnerPanel()">
+        <div style="font-size:10px;color:rgba(255,255,255,.35);font-weight:600;letter-spacing:.06em;margin-bottom:4px">🏢 서비스 제공사</div>
+        <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,.85)" id="sb-company-name">따시델레</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.4)" id="sb-company-tel">클릭하여 사업자 정보 관리</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div class="avatar">관</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600;color:#fff" id="sb-admin-name">관리자</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="sb-admin-email">admin@company.com</div>
+        </div>
+      </div>
+      <button onclick="doLogout()" style="width:100%;padding:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:rgba(255,255,255,.45);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s" onmouseover="this.style.background='rgba(239,68,68,.15)';this.style.color='#fca5a5'" onmouseout="this.style.background='rgba(255,255,255,.06)';this.style.color='rgba(255,255,255,.45)'">
+        ← 로그아웃
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <div id="main">
+    <div id="topbar">
+      <div>
+        <div class="topbar-title" id="topbar-title">대시보드</div>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-primary btn-sm" onclick="openModal('modal-event')">+ 새 행사</button>
+        <div style="width:1px;height:20px;background:var(--border);margin:0 4px"></div>
+        <span style="font-size:12px;color:var(--t3)" id="current-date"></span>
+      </div>
+    </div>
+    <div id="content"></div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div id="toast-container"></div>
+
+<!-- ==================== MODALS ==================== -->
+
+<!-- Event Modal -->
+<div id="modal-event" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeModal('modal-event')">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div class="modal-title" id="event-modal-title">🎪 새 행사 만들기</div>
+      <button class="modal-close" onclick="closeModal('modal-event')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="event-edit-id">
+      <div class="form-row cols2">
+        <div class="form-group">
+          <label class="form-label">행사명 *</label>
+          <input class="form-input" id="ev-name" placeholder="예: 2025 봄 행사">
+        </div>
+        <div class="form-group">
+          <label class="form-label">장소 *</label>
+          <input class="form-input" id="ev-location" placeholder="예: 서울 올림픽공원">
+        </div>
+      </div>
+      <div class="form-row cols3">
+        <div class="form-group">
+          <label class="form-label">행사 날짜 *</label>
+          <input class="form-input" type="date" id="ev-date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">집합 시간</label>
+          <input class="form-input" type="time" id="ev-gather-time">
+        </div>
+        <div class="form-group">
+          <label class="form-label">급여 (원) *</label>
+          <input class="form-input" type="number" id="ev-pay" placeholder="120000">
+        </div>
+      </div>
+      <div class="form-row cols2">
+        <div class="form-group">
+          <label class="form-label">근무 시작</label>
+          <input class="form-input" type="time" id="ev-start">
+        </div>
+        <div class="form-group">
+          <label class="form-label">근무 종료</label>
+          <input class="form-input" type="time" id="ev-end">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">담당자 연락처</label>
+        <input class="form-input" id="ev-contact" placeholder="담당자 이름 / 전화번호">
+      </div>
+      <div class="form-group">
+        <label class="form-label">계약서 템플릿</label>
+        <select class="form-select" id="ev-template">
+          <option value="">기본 템플릿 사용</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">메모</label>
+        <textarea class="form-textarea" id="ev-memo" placeholder="행사 관련 메모 (내부용)" style="min-height:70px"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-event')">취소</button>
+      <button class="btn btn-primary" onclick="saveEvent()">행사 저장 → 링크 발급</button>
+    </div>
+  </div>
+</div>
+
+<!-- Notice Modal -->
+<div id="modal-notice" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeModal('modal-notice')">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div class="modal-title" id="notice-modal-title">📋 사전안내 만들기</div>
+      <button class="modal-close" onclick="closeModal('modal-notice')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="notice-edit-id">
+      <div class="form-row cols2">
+        <div class="form-group">
+          <label class="form-label">행사명 *</label>
+          <input class="form-input" id="nt-event-name" placeholder="예: 2025 봄 페스티벌">
+        </div>
+        <div class="form-group">
+          <label class="form-label">담당자</label>
+          <input class="form-input" id="nt-manager" placeholder="이름 / 연락처">
+        </div>
+      </div>
+      <div class="form-row cols2">
+        <div class="form-group">
+          <label class="form-label">행사 날짜</label>
+          <input class="form-input" type="date" id="nt-date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">행사 장소</label>
+          <input class="form-input" id="nt-location" placeholder="상세 주소 포함">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">집합 장소 (상세)</label>
+        <input class="form-input" id="nt-gather-place" placeholder="예: 정문 앞 집결 / B1 주차장 입구">
+      </div>
+      <div class="form-row cols2">
+        <div class="form-group">
+          <label class="form-label">집합 시간</label>
+          <input class="form-input" type="time" id="nt-gather-time">
+        </div>
+        <div class="form-group">
+          <label class="form-label">복장/유니폼</label>
+          <input class="form-input" id="nt-dress" placeholder="예: 흰 상의 + 청바지">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">하는 일 / 업무 내용 *</label>
+        <textarea class="form-textarea" id="nt-work-desc" placeholder="예: 행사장 안내, 입장객 티켓 확인, 안전 관리 등 구체적으로 작성해주세요" style="min-height:90px"></textarea>
+      </div>
+      <div class="form-row cols2">
+        <div class="form-group">
+          <label class="form-label">근무 시간</label>
+          <input class="form-input" id="nt-work-time" placeholder="예: 10:00 ~ 21:00 (중간 휴식 1시간)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">식사 제공</label>
+          <select class="form-select" id="nt-meal">
+            <option value="">선택</option>
+            <option value="점심 제공">점심 제공</option>
+            <option value="저녁 제공">저녁 제공</option>
+            <option value="점심+저녁 제공">점심+저녁 제공</option>
+            <option value="미제공 (식비 별도)">미제공 (식비 별도)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">주의사항 / 필수 지참물</label>
+        <textarea class="form-textarea" id="nt-caution" placeholder="예: 신분증 필수 지참, 우천 시 우비 지참, 편한 신발 착용 권장" style="min-height:70px"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">추가 안내</label>
+        <textarea class="form-textarea" id="nt-extra" placeholder="기타 전달 사항 (주차 정보, 교통 안내 등)" style="min-height:70px"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-notice')">취소</button>
+      <button class="btn btn-primary" onclick="saveNotice()">사전안내 저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- Template Modal -->
+<div id="modal-template" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeModal('modal-template')">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div class="modal-title" id="tmpl-modal-title">📄 계약서 템플릿</div>
+      <button class="modal-close" onclick="closeModal('modal-template')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="tmpl-edit-id">
+      <div class="form-group">
+        <label class="form-label">템플릿 이름 *</label>
+        <input class="form-input" id="tmpl-name" placeholder="예: 행사운영 스태프 계약서">
+      </div>
+      <div class="form-group">
+        <label class="form-label">계약서 내용 *</label>
+        <div style="font-size:11px;color:var(--t3);margin-bottom:6px">사용 가능한 변수: {행사명} {장소} {날짜} {근무시간} {급여} {성명}</div>
+        <textarea class="form-textarea" id="tmpl-content" style="min-height:280px;font-family:monospace;font-size:12px"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-template')">취소</button>
+      <button class="btn btn-primary" onclick="saveTemplate()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- Event Detail / QR Modal -->
+<div id="modal-event-detail" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeModal('modal-event-detail')">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div class="modal-title">🔗 행사 링크 & QR</div>
+      <button class="modal-close" onclick="closeModal('modal-event-detail')">✕</button>
+    </div>
+    <div class="modal-body" id="event-detail-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-event-detail')">닫기</button>
+      <button class="btn btn-primary" onclick="downloadQR()">QR 이미지 저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- Contract View Modal -->
+<div id="modal-contract-view" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeModal('modal-contract-view')">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div class="modal-title">📄 계약서 상세</div>
+      <button class="modal-close" onclick="closeModal('modal-contract-view')">✕</button>
+    </div>
+    <div class="modal-body" id="contract-view-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-contract-view')">닫기</button>
+      <button class="btn btn-primary" onclick="printContract()">🖨️ 인쇄 / PDF 저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- Sign Page Modal (simulates mobile contract signing) -->
+<div id="modal-sign" class="modal-overlay" style="display:none">
+  <div class="modal" style="max-width:520px;border-radius:22px;box-shadow:0 20px 60px rgba(0,0,0,.2)">
+    <div class="modal-header" style="padding:16px 22px 12px;border-bottom:none">
+      <div style="font-size:12px;font-weight:600;color:var(--t3);letter-spacing:.04em">⚡ CONTRACTOS · 전자근로계약</div>
+      <button class="modal-close" onclick="closeModal('modal-sign')">✕</button>
+    </div>
+    <div class="modal-body" style="padding:4px 22px 24px" id="sign-modal-body"></div>
+  </div>
+</div>
+
+<!-- Notice View Modal -->
+<div id="modal-notice-view" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeModal('modal-notice-view')">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div class="modal-title">📋 사전안내 상세</div>
+      <button class="modal-close" onclick="closeModal('modal-notice-view')">✕</button>
+    </div>
+    <div class="modal-body" id="notice-view-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-notice-view')">닫기</button>
+      <button onclick="shareNoticeKakao()" style="display:inline-flex;align-items:center;gap:7px;padding:9px 18px;background:#FEE500;border:none;border-radius:9px;font-size:13px;font-weight:700;color:#391B1B;cursor:pointer;font-family:'Freesentation',sans-serif">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#391B1B"><path d="M12 3C6.48 3 2 6.69 2 11.25c0 2.88 1.74 5.42 4.38 6.97l-.97 3.56 4.08-2.56c.82.14 1.67.22 2.51.22 5.52 0 10-3.69 10-8.25S17.52 3 12 3z"/></svg>
+        카카오 공유
+      </button>
+      <button class="btn btn-primary" onclick="printNotice()">🖨️ 인쇄 / PDF</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 🔐 사업자 정보 관리자 전용 모달 ========== -->
+<div id="modal-owner-lock" class="modal-overlay" style="display:none">
+  <div class="modal" style="max-width:400px;border-radius:20px">
+    <div class="modal-header" style="border-bottom:none;padding-bottom:8px">
+      <div>
+        <div class="modal-title">🔐 관리자 전용 구역</div>
+        <div style="font-size:12px;color:var(--t3);margin-top:2px">사업자 정보는 소프트웨어 제공자만 수정할 수 있습니다</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('modal-owner-lock')">✕</button>
+    </div>
+    <div class="modal-body" style="padding-top:8px">
+      <div style="background:linear-gradient(135deg,#0f172a,#1e3a8a);border-radius:14px;padding:20px;text-align:center;margin-bottom:20px">
+        <div style="font-size:32px;margin-bottom:8px">🔒</div>
+        <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:4px">소프트웨어 제공자 인증</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.5)">ContractOS by 따시델레</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">관리자 비밀번호</label>
+        <input class="form-input" type="password" id="owner-pw-input" placeholder="비밀번호를 입력하세요" onkeydown="if(event.key==='Enter')verifyOwner()">
+      </div>
+      <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 12px;font-size:12px;color:#92400e;margin-bottom:16px">
+        ⚠️ 이 구역은 소프트웨어 판매자(제공사)만 접근 가능합니다. 구매 고객은 수정 불가입니다.
+      </div>
+      <button class="btn btn-primary" style="width:100%" onclick="verifyOwner()">인증하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 사업자 정보 편집 모달 (인증 후) -->
+<div id="modal-owner-edit" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeModal('modal-owner-edit')">
+  <div class="modal modal-lg" style="border-radius:20px">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">🏢 사업자 정보 관리 <span style="font-size:11px;background:#d1fae5;color:#065f46;padding:2px 8px;border-radius:10px;font-weight:600;margin-left:6px">OWNER ONLY</span></div>
+        <div style="font-size:12px;color:var(--t3);margin-top:2px">이 정보는 계약서·안내문·화면에 자동으로 표시됩니다</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('modal-owner-edit')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="background:#fef2f2;border:1.5px solid #fecaca;border-radius:12px;padding:12px 16px;margin-bottom:18px;font-size:13px;color:#991b1b;display:flex;gap:10px;align-items:flex-start">
+        <span style="font-size:18px">🛡️</span>
+        <div><strong>재판매·무단복제 방지 잠금</strong><br>사업자 정보는 소프트웨어 제공자(판매자) 비밀번호 없이는 수정할 수 없습니다. 구매 고객은 이 화면에 접근할 수 없습니다.</div>
+      </div>
+      <div class="grid2">
+        <div class="form-group">
+          <label class="form-label">회사명 / 브랜드명 *</label>
+          <input class="form-input" id="ow-company" placeholder="예: 경상북도 청도 복합문화공간 따시델레">
+        </div>
+        <div class="form-group">
+          <label class="form-label">대표자명</label>
+          <input class="form-input" id="ow-ceo" placeholder="대표자 이름">
+        </div>
+        <div class="form-group">
+          <label class="form-label">사업자등록번호</label>
+          <input class="form-input" id="ow-biz-no" placeholder="000-00-00000">
+        </div>
+        <div class="form-group">
+          <label class="form-label">대표 전화</label>
+          <input class="form-input" id="ow-tel" placeholder="010-0000-0000">
+        </div>
+        <div class="form-group">
+          <label class="form-label">이메일</label>
+          <input class="form-input" id="ow-email" placeholder="admin@company.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">업종 / 업태</label>
+          <input class="form-input" id="ow-biz-type" placeholder="예: 이벤트 행사 기획·운영">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">사업장 주소</label>
+        <input class="form-input" id="ow-address" placeholder="사업장 상세 주소">
+      </div>
+      <div class="form-group">
+        <label class="form-label">라이선스 키 (구매 고객 인증용) *</label>
+        <div style="display:flex;gap:8px">
+          <input class="form-input" id="ow-license" placeholder="구매 고객에게 발급할 라이선스 키" style="font-family:monospace">
+          <button class="btn btn-secondary" onclick="genLicense()" style="white-space:nowrap;flex-shrink:0">자동 생성</button>
+        </div>
+        <div style="font-size:11px;color:var(--t3);margin-top:4px">구매 고객이 처음 실행 시 입력해야 하는 인증 코드입니다</div>
+      </div>
+      <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:8px">
+        <div style="font-size:13px;font-weight:700;margin-bottom:10px;color:var(--t1)">🔐 관리자 비밀번호 변경</div>
+        <div class="grid2">
+          <div class="form-group">
+            <label class="form-label">새 비밀번호</label>
+            <input class="form-input" type="password" id="ow-pw-new" placeholder="새 비밀번호">
+          </div>
+          <div class="form-group">
+            <label class="form-label">비밀번호 확인</label>
+            <input class="form-input" type="password" id="ow-pw-confirm" placeholder="동일하게 입력">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-owner-edit')">취소</button>
+      <button class="btn btn-danger" onclick="lockOwner()">🔒 잠금 (세션 종료)</button>
+      <button class="btn btn-primary" onclick="saveOwnerInfo()">사업자 정보 저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 라이선스 인증 화면 (미인증 고객) -->
+<div id="modal-license-check" class="modal-overlay" style="display:none">
+  <div class="modal" style="max-width:440px;border-radius:20px">
+    <div class="modal-body" style="padding:32px 28px;text-align:center">
+      <div style="font-size:48px;margin-bottom:16px">⚡</div>
+      <div style="font-size:22px;font-weight:900;color:#0f172a;margin-bottom:6px">ContractOS</div>
+      <div style="font-size:13px;color:#9aa5bb;margin-bottom:24px">경상북도 청도 복합문화공간 따시델레</div>
+      <div style="background:#f8f9fc;border:1.5px solid #e4e8f0;border-radius:14px;padding:20px;margin-bottom:20px;text-align:left">
+        <div style="font-size:13px;font-weight:700;color:#1a2233;margin-bottom:12px">라이선스 인증</div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">구매 라이선스 키</label>
+          <input class="form-input" id="license-input" placeholder="발급받은 라이선스 키 입력" style="font-family:monospace" onkeydown="if(event.key==='Enter')checkLicense()">
+        </div>
+      </div>
+      <button class="btn btn-primary" style="width:100%;padding:14px;font-size:15px;font-weight:700" onclick="checkLicense()">인증하고 시작하기</button>
+      <div style="margin-top:14px;font-size:12px;color:#9aa5bb">라이선스 키는 구매 시 이메일로 발송됩니다<br>문의: <span id="license-contact-email">admin@company.com</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- Server Guide Modal -->
+<div id="modal-server-guide" class="modal-overlay" style="display:none" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal modal-lg" style="max-width:660px">
+    <div class="modal-header">
+      <div class="modal-title">🚀 실제 서버 연동 가이드</div>
+      <button class="modal-close" onclick="document.getElementById('modal-server-guide').style.display='none'">✕</button>
+    </div>
+    <div class="modal-body" style="font-size:13px;line-height:1.9">
+
+      <div style="background:linear-gradient(135deg,#eff3ff,#f5f3ff);border:1.5px solid #c7d2fe;border-radius:14px;padding:16px;margin-bottom:20px">
+        <div style="font-size:15px;font-weight:800;color:#3730a3;margin-bottom:4px">📌 현재 상태</div>
+        <div style="color:#4338ca">이 파일은 <strong>브라우저 localStorage</strong>에 데이터를 저장합니다. 실제 서비스로 전환하려면 아래 3단계를 따르세요.</div>
+      </div>
+
+      <!-- Step 1 -->
+      <div style="margin-bottom:20px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <div style="width:28px;height:28px;background:#3b6ef0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0">1</div>
+          <div style="font-size:15px;font-weight:700;color:#1a2233">Supabase 프로젝트 생성 (무료)</div>
+        </div>
+        <div style="background:#0f172a;border-radius:10px;padding:14px;font-family:monospace;font-size:12px;color:#93c5fd;line-height:1.9;margin-bottom:8px">
+          <span style="color:#64748b"># 1. supabase.com 가입 후 새 프로젝트 생성</span><br>
+          <span style="color:#6ee7b7">npm install</span> @supabase/supabase-js<br><br>
+          <span style="color:#64748b"># 2. .env 파일에 추가</span><br>
+          SUPABASE_URL=<span style="color:#fde68a">https://xxxx.supabase.co</span><br>
+          SUPABASE_ANON_KEY=<span style="color:#fde68a">your-anon-key</span>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div style="margin-bottom:20px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <div style="width:28px;height:28px;background:#3b6ef0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0">2</div>
+          <div style="font-size:15px;font-weight:700;color:#1a2233">DB 함수 교체 (localStorage → Supabase)</div>
+        </div>
+        <div style="background:#0f172a;border-radius:10px;padding:14px;font-family:monospace;font-size:12px;color:#e2e8f0;line-height:1.9">
+          <span style="color:#64748b">// 현재 코드 (localStorage)</span><br>
+          <span style="color:#93c5fd">const</span> events = DB.get(<span style="color:#6ee7b7">'events'</span>);<br><br>
+          <span style="color:#64748b">// ↓ Supabase로 교체</span><br>
+          <span style="color:#93c5fd">const</span> { data: events } = <span style="color:#93c5fd">await</span> supabase<br>
+          &nbsp;&nbsp;.from(<span style="color:#6ee7b7">'events'</span>)<br>
+          &nbsp;&nbsp;.select(<span style="color:#6ee7b7">'*'</span>)<br>
+          &nbsp;&nbsp;.order(<span style="color:#6ee7b7">'created_at'</span>, { ascending: <span style="color:#f9a8d4">false</span> });
+        </div>
+      </div>
+
+      <!-- Step 3 Kakao -->
+      <div style="margin-bottom:20px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <div style="width:28px;height:28px;background:#FEE500;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#391B1B;flex-shrink:0">3</div>
+          <div style="font-size:15px;font-weight:700;color:#1a2233">카카오톡 공유 SDK 연동</div>
+        </div>
+        <div style="background:#0f172a;border-radius:10px;padding:14px;font-family:monospace;font-size:12px;color:#e2e8f0;line-height:1.9;margin-bottom:8px">
+          <span style="color:#64748b">&lt;!-- HTML head에 추가 --&gt;</span><br>
+          <span style="color:#93c5fd">&lt;script</span> src=<span style="color:#6ee7b7">"https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"</span><span style="color:#93c5fd">&gt;&lt;/script&gt;</span><br><br>
+          <span style="color:#64748b">// JavaScript에서 초기화</span><br>
+          Kakao.init(<span style="color:#fde68a">'YOUR_KAKAO_APP_KEY'</span>);<br><br>
+          <span style="color:#64748b">// developers.kakao.com 에서 앱 등록 필요</span><br>
+          <span style="color:#64748b">// 플랫폼 → 웹 → 사이트 도메인 등록</span>
+        </div>
+        <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;font-size:12px;color:#92400e">
+          ⚠️ <strong>카카오 앱키</strong>는 <a href="https://developers.kakao.com" target="_blank" style="color:#b45309">developers.kakao.com</a> 에서 발급받고,<br>
+          JavaScript 키를 사용하세요. 반드시 도메인 등록이 필요합니다.
+        </div>
+      </div>
+
+      <!-- Step 4 Deploy -->
+      <div style="margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <div style="width:28px;height:28px;background:#10b981;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0">4</div>
+          <div style="font-size:15px;font-weight:700;color:#1a2233">Vercel 배포 (무료)</div>
+        </div>
+        <div style="background:#0f172a;border-radius:10px;padding:14px;font-family:monospace;font-size:12px;color:#e2e8f0;line-height:1.9">
+          <span style="color:#64748b"># GitHub에 push → Vercel 자동 배포</span><br>
+          npm i -g vercel<br>
+          vercel login<br>
+          vercel --prod<br><br>
+          <span style="color:#64748b"># 무료 도메인: yourapp.vercel.app</span><br>
+          <span style="color:#64748b"># 커스텀 도메인 연결도 가능</span>
+        </div>
+      </div>
+
+      <div style="background:#ecfdf5;border:1.5px solid #a7f3d0;border-radius:12px;padding:14px;margin-top:16px">
+        <div style="font-weight:700;color:#065f46;margin-bottom:6px">✅ 완성 시 가능한 것들</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:12px;color:#047857">
+          <div>• 링크 하나로 계약 완료</div><div>• QR 코드 스캔 서명</div>
+          <div>• 카카오톡 공유 발송</div><div>• PDF 자동 생성·저장</div>
+          <div>• 엑셀 다운로드</div><div>• 실시간 계약 현황</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="document.getElementById('modal-server-guide').style.display='none'">닫기</button>
+      <button class="btn btn-primary" onclick="window.open('https://supabase.com','_blank')">Supabase 시작하기 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== SCRIPTS ==================== -->
+<script>
+// ── DB (localStorage) ──────────────────────────────
+const DB = {
+  get(k){try{return JSON.parse(localStorage.getItem('cos_'+k)||'[]')}catch{return []}},
+  set(k,v){localStorage.setItem('cos_'+k,JSON.stringify(v))},
+  getObj(k){try{return JSON.parse(localStorage.getItem('cos_'+k)||'{}')}catch{return {}}},
+  setObj(k,v){localStorage.setItem('cos_'+k,JSON.stringify(v))}
+};
+const uid=()=>Math.random().toString(36).slice(2,10)+Date.now().toString(36);
+const fmt=d=>d?new Date(d).toLocaleDateString('ko-KR',{year:'numeric',month:'2-digit',day:'2-digit'}):'';
+const fmtDT=d=>d?new Date(d).toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
+const money=n=>n?Number(n).toLocaleString()+'원':'';
+
+// ── Current page ───────────────────────────────────
+let currentPage = 'dashboard';
+let currentSignEvent = null;
+let currentSignStep = 1;
+let sigCanvas, sigCtx, isDrawing = false;
+let currentPrintContract = null;
+let currentPrintNotice = null;
+
+// ── Seed default data ──────────────────────────────
+function seedData(){
+  if(DB.get('att_logs').length===0) DB.set('att_logs',[]);
+  if(DB.get('templates').length===0){
+    DB.set('templates',[
+      {id:'tmpl1',name:'행사운영 스태프 계약서',content:`행사운영 스태프 근로계약서
+
+갑: (주)이벤트컴퍼니 (이하 "갑")
+을: {성명} (이하 "을")
+
+갑과 을은 아래와 같이 근로계약을 체결한다.
+
+1. 근무 행사명: {행사명}
+2. 근무 장소: {장소}
+3. 근무 날짜: {날짜}
+4. 근무 시간: {근무시간}
+5. 급여: {급여}
+   - 급여는 행사 종료 후 7영업일 이내 을이 지정한 계좌로 입금한다.
+
+6. 업무 내용
+   갑이 지정한 행사 운영에 필요한 제반 업무를 성실히 수행한다.
+
+7. 을의 의무
+   - 지정된 복장 및 용모를 갖추고 근무에 임한다.
+   - 개인 물품 분실에 대해 갑은 책임지지 않는다.
+   - 무단 조기 퇴장 시 급여 지급이 제한될 수 있다.
+
+8. 개인정보 동의
+   본 계약 이행을 위해 성명, 연락처, 계좌정보를 수집·이용함에 동의한다.
+
+위 계약 내용을 확인하였으며 이에 서명합니다.`,createdAt:new Date().toISOString()},
+      {id:'tmpl2',name:'축제 진행 계약서',content:`축제 행사 스태프 근로계약서
+
+행사명: {행사명}
+장소: {장소} / 날짜: {날짜}
+근무시간: {근무시간} / 급여: {급여}
+
+성명: {성명}
+
+본인은 위 행사에 스태프로 참여하며 주최측의 지시에 따라 성실히 근무할 것을 확약합니다.
+급여는 계약 종료 후 지정 계좌로 지급되며, 개인정보 수집·이용에 동의합니다.`,createdAt:new Date().toISOString()},
+    ]);
+  }
+  if(DB.get('events').length===0){
+    const id1=uid(), id2=uid();
+    DB.set('events',[
+      {id:id1,name:'2025 봄 행사',location:'서울 올림픽공원 평화의문',date:'2025-05-20',gatherTime:'08:30',startTime:'09:00',endTime:'18:00',pay:120000,contact:'김담당 / 010-1234-5678',templateId:'tmpl1',memo:'우천 시 일정 변경 가능',token:'evt_'+id1,status:'active',createdAt:new Date().toISOString()},
+      {id:id2,name:'여름 뮤직 페스티벌',location:'인천 송도 컨벤시아',date:'2025-07-15',gatherTime:'09:00',startTime:'10:00',endTime:'22:00',pay:150000,contact:'이담당 / 010-9876-5432',templateId:'tmpl2',memo:'',token:'evt_'+id2,status:'active',createdAt:new Date().toISOString()},
+    ]);
+    DB.set('contracts',[
+      {id:uid(),eventId:id1,workerName:'홍길동',phone:'010-1111-2222',bankName:'카카오뱅크',accountNumber:'3333-01-1234567',signatureData:'data:image/png;base64,iVBORw0KGgo=',signedAt:new Date(Date.now()-3600000).toISOString(),status:'signed',ip:'192.168.1.1'},
+      {id:uid(),eventId:id1,workerName:'김영희',phone:'010-3333-4444',bankName:'국민은행',accountNumber:'123-45-678901',signatureData:'data:image/png;base64,iVBORw0KGgo=',signedAt:new Date(Date.now()-7200000).toISOString(),status:'signed',ip:'192.168.1.2'},
+      {id:uid(),eventId:id2,workerName:'이철수',phone:'010-5555-6666',bankName:'신한은행',accountNumber:'110-123-456789',signatureData:'',signedAt:null,status:'pending',ip:''},
+    ]);
+  }
+  if(DB.get('notices').length===0){
+    DB.set('notices',[
+      {id:uid(),eventName:'2025 봄 행사',date:'2025-05-20',location:'서울 올림픽공원 평화의문',gatherPlace:'정문 앞 집결',gatherTime:'08:30',workDesc:'입장객 안내 및 티켓 확인, 안전 관리, 행사장 정리',workTime:'09:00 ~ 18:00 (중간 휴식 1시간)',dress:'흰 티셔츠 + 청바지 + 운동화',meal:'점심 제공',caution:'신분증 필수 지참, 편한 신발 착용 권장',extra:'주차 불가 (대중교통 이용 권장)',manager:'김담당 / 010-1234-5678',createdAt:new Date().toISOString()},
+    ]);
+  }
+}
+
+// ── Navigation ─────────────────────────────────────
+function navigate(page){
+  // 페이지 이동 시 카메라 정리
+  if(attScanActive && page !== 'attendance'){
+    attScanActive=false;
+    if(attVideoStream){attVideoStream.getTracks().forEach(t=>t.stop());attVideoStream=null;}
+    if(attScanInterval){clearInterval(attScanInterval);attScanInterval=null;}
+  }
+  currentPage = page;
+  document.querySelectorAll('.sb-item').forEach(el=>el.classList.remove('active'));
+  const nav = document.getElementById('nav-'+page);
+  if(nav) nav.classList.add('active');
+  const titles={dashboard:'대시보드',notice:'사전안내 관리',events:'행사 관리',contracts:'계약자 관리',templates:'계약서 템플릿',stats:'통계',attendance:'📡 QR 출석체크'};
+  document.getElementById('topbar-title').textContent = titles[page]||page;
+  render();
+}
+
+function render(){
+  const pages={dashboard:renderDashboard,notice:renderNotice,events:renderEvents,contracts:renderContracts,templates:renderTemplates,stats:renderStats,attendance:renderAttendance};
+  const fn = pages[currentPage];
+  if(fn) document.getElementById('content').innerHTML = fn();
+  afterRender();
+}
+
+function afterRender(){
+  if(currentPage==='stats') renderCharts();
+  // Populate template select in event modal
+  const sel = document.getElementById('ev-template');
+  if(sel){
+    const tmpls = DB.get('templates');
+    sel.innerHTML = '<option value="">기본 템플릿 사용</option>';
+    tmpls.forEach(t=>sel.insertAdjacentHTML('beforeend',`<option value="${t.id}">${t.name}</option>`));
+  }
+}
+
+// ── Dashboard ──────────────────────────────────────
+function renderDashboard(){
+  const events=DB.get('events'), contracts=DB.get('contracts'), notices=DB.get('notices');
+  const signed=contracts.filter(c=>c.status==='signed');
+  const pending=contracts.filter(c=>c.status==='pending');
+  const totalPay=signed.reduce((s,c)=>{const ev=events.find(e=>e.id===c.eventId);return s+(ev?Number(ev.pay):0);},0);
+  const rate=contracts.length?Math.round(signed.length/contracts.length*100):0;
+
+  const recentContracts=contracts.slice(-5).reverse();
+
+  return `
+  <div class="stats-grid">
+    <div class="stat-card blue">
+      <div class="stat-label">📋 전체 행사</div>
+      <div class="stat-value">${events.length}</div>
+      <div class="stat-sub">사전안내 ${notices.length}건</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-label">✅ 계약 완료</div>
+      <div class="stat-value">${signed.length}</div>
+      <div class="stat-sub">완료율 ${rate}%</div>
+    </div>
+    <div class="stat-card amber">
+      <div class="stat-label">⏳ 미서명</div>
+      <div class="stat-value">${pending.length}</div>
+      <div class="stat-sub">전체 ${contracts.length}명</div>
+    </div>
+    <div class="stat-card purple">
+      <div class="stat-label">💰 급여 총합</div>
+      <div class="stat-value" style="font-size:20px">₩${totalPay.toLocaleString()}</div>
+      <div class="stat-sub">완료 계약 기준</div>
+    </div>
+  </div>
+
+  <div class="grid2" style="gap:16px">
+    <div class="card">
+      <div class="section-title">🕐 최근 계약 현황</div>
+      ${recentContracts.length===0?`<div class="empty-state"><div class="empty-icon">📭</div><p>계약 내역이 없습니다</p></div>`:
+      recentContracts.map(c=>{
+        const ev=events.find(e=>e.id===c.eventId);
+        return `<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)">
+          <div>
+            <div style="font-size:13px;font-weight:600">${c.workerName}</div>
+            <div style="font-size:11px;color:var(--t3)">${ev?ev.name:'알 수 없음'} · ${c.signedAt?fmtDT(c.signedAt):'대기 중'}</div>
+          </div>
+          <span class="badge ${c.status==='signed'?'badge-green':'badge-amber'}">${c.status==='signed'?'완료':'대기'}</span>
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="card">
+      <div class="section-title">🎪 진행 중 행사</div>
+      ${events.length===0?`<div class="empty-state"><div class="empty-icon">🎪</div><p>등록된 행사가 없습니다</p></div>`:
+      events.slice(-4).reverse().map(ev=>{
+        const cnt=contracts.filter(c=>c.eventId===ev.id);
+        const s=cnt.filter(c=>c.status==='signed').length;
+        const pct=cnt.length?Math.round(s/cnt.length*100):0;
+        return `<div style="padding:9px 0;border-bottom:1px solid var(--border)">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <div style="font-size:13px;font-weight:600">${ev.name}</div>
+            <span style="font-size:11px;color:var(--t3)">${s}/${cnt.length}명</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+          <div style="font-size:11px;color:var(--t3);margin-top:4px">${fmt(ev.date)} · ${ev.location}</div>
+        </div>`;
+      }).join('')}
+      <button class="btn btn-ghost btn-sm" style="margin-top:10px;width:100%" onclick="navigate('events')">전체 보기 →</button>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <div class="section-title">📋 최근 사전안내</div>
+    ${notices.length===0?`<div class="empty-state"><div class="empty-icon">📋</div><p>등록된 사전안내가 없습니다</p></div>`:
+    `<div class="notice-grid">
+    ${notices.slice(-3).map(n=>`
+      <div class="notice-card" onclick="viewNotice('${n.id}')" style="cursor:pointer">
+        <div class="notice-header">
+          <div>
+            <div style="font-size:13px;font-weight:700">${n.eventName}</div>
+            <div style="font-size:11px;color:var(--t3)">${fmt(n.date)} · ${n.location}</div>
+          </div>
+          <span class="badge badge-teal">안내</span>
+        </div>
+        <div class="notice-body">
+          <div class="notice-row"><span class="notice-icon">⏰</span><span class="notice-label">집합</span><span>${n.gatherTime||'-'} / ${n.gatherPlace||'-'}</span></div>
+          <div class="notice-row"><span class="notice-icon">💼</span><span class="notice-label">업무</span><span style="color:var(--t1)">${(n.workDesc||'').slice(0,40)}${(n.workDesc||'').length>40?'…':''}</span></div>
+        </div>
+      </div>`).join('')}
+    </div>`}
+  </div>`;
+}
+
+// ── Notice ─────────────────────────────────────────
+function renderNotice(){
+  const notices=DB.get('notices');
+  return `
+  <div class="page-header">
+    <div><div class="page-title">📋 사전안내 관리</div><div class="page-sub">행사별 집합 시간·장소·업무 내용을 스태프에게 안내합니다</div></div>
+    <button class="btn btn-primary" onclick="openNoticeModal()">+ 사전안내 만들기</button>
+  </div>
+  ${notices.length===0?`<div class="card"><div class="empty-state"><div class="empty-icon">📋</div><p>사전안내를 만들어 스태프에게 공유하세요</p><button class="btn btn-primary" style="margin-top:14px" onclick="openNoticeModal()">+ 사전안내 만들기</button></div></div>`:
+  `<div class="notice-grid">
+    ${notices.map(n=>`
+    <div class="notice-card">
+      <div class="notice-header">
+        <div>
+          <div style="font-size:14px;font-weight:700;color:var(--t1)">${n.eventName}</div>
+          <div style="font-size:11px;color:var(--t3)">${fmt(n.date)} · ${n.location}</div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-sm btn-secondary" onclick="editNotice('${n.id}')">수정</button>
+          <button class="btn btn-sm btn-primary" onclick="viewNotice('${n.id}')">보기</button>
+        </div>
+      </div>
+      <div class="notice-body">
+        <div class="notice-row"><span class="notice-icon">📍</span><span class="notice-label">집합장소</span><span>${n.gatherPlace||'-'}</span></div>
+        <div class="notice-row"><span class="notice-icon">⏰</span><span class="notice-label">집합시간</span><span style="font-weight:600;color:var(--blue)">${n.gatherTime||'-'}</span></div>
+        <div class="notice-row"><span class="notice-icon">👔</span><span class="notice-label">복장</span><span>${n.dress||'-'}</span></div>
+        <div class="notice-row"><span class="notice-icon">💼</span><span class="notice-label">업무</span><span>${(n.workDesc||'').slice(0,60)}${(n.workDesc||'').length>60?'…':''}</span></div>
+        <div class="notice-row"><span class="notice-icon">🍱</span><span class="notice-label">식사</span><span>${n.meal||'-'}</span></div>
+        ${n.caution?`<div class="notice-row"><span class="notice-icon">⚠️</span><span class="notice-label">주의사항</span><span style="color:var(--red)">${n.caution.slice(0,50)}</span></div>`:''}
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;gap:6px;justify-content:space-between;align-items:center">
+          <span style="font-size:11px;color:var(--t3)">담당: ${n.manager||'-'}</span>
+          <button class="btn btn-danger btn-sm" onclick="deleteNotice('${n.id}')">삭제</button>
+        </div>
+      </div>
+    </div>`).join('')}
+  </div>`}`;
+}
+
+// ── Events ─────────────────────────────────────────
+function renderEvents(){
+  const events=DB.get('events'), contracts=DB.get('contracts');
+  return `
+  <div class="page-header">
+    <div><div class="page-title">🎪 행사 관리</div><div class="page-sub">행사를 생성하고 계약 링크·QR코드를 발급합니다</div></div>
+    <button class="btn btn-primary" onclick="openModal('modal-event');resetEventForm()">+ 새 행사 만들기</button>
+  </div>
+  ${events.length===0?`<div class="card"><div class="empty-state"><div class="empty-icon">🎪</div><p>첫 번째 행사를 만들어보세요</p></div></div>`:
+  `<div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>행사명</th><th>날짜</th><th>장소</th><th>집합시간</th><th>근무시간</th><th>급여</th><th>계약현황</th><th>상태</th><th>액션</th>
+      </tr></thead>
+      <tbody>
+        ${events.map(ev=>{
+          const cnt=contracts.filter(c=>c.eventId===ev.id);
+          const s=cnt.filter(c=>c.status==='signed').length;
+          return `<tr>
+            <td><div style="font-weight:600">${ev.name}</div><div style="font-size:11px;color:var(--t3)">${ev.contact||''}</div></td>
+            <td>${fmt(ev.date)}</td>
+            <td style="max-width:140px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${ev.location}</td>
+            <td>${ev.gatherTime||'-'}</td>
+            <td>${ev.startTime||'-'} ~ ${ev.endTime||'-'}</td>
+            <td style="font-weight:600;color:var(--blue)">${money(ev.pay)}</td>
+            <td><span class="badge badge-${s===cnt.length&&cnt.length>0?'green':'amber'}">${s}/${cnt.length}명</span></td>
+            <td><span class="badge badge-${ev.status==='active'?'green':'gray'}">${ev.status==='active'?'진행중':'마감'}</span></td>
+            <td>
+              <div style="display:flex;gap:4px;flex-wrap:wrap">
+                <button class="btn btn-sm btn-secondary" onclick="showEventDetail('${ev.id}')">링크·QR</button>
+                <button class="btn btn-sm" style="background:#f0fdfa;color:#0d9488;border:1px solid #99f6e4" onclick="openAttendancePage('${ev.id}')">📡 출석전용</button>
+                <button class="btn btn-sm btn-primary" onclick="openSignPreview('${ev.id}')">미리보기</button>
+                <button class="btn btn-sm btn-ghost" onclick="editEvent('${ev.id}')">수정</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteEvent('${ev.id}')">삭제</button>
+              </div>
+            </td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+  </div>`}`;
+}
+
+// ── Contracts ──────────────────────────────────────
+function renderContracts(filterEvent='',filterStatus='',search=''){
+  const events=DB.get('events');
+  let contracts=DB.get('contracts');
+  if(filterEvent) contracts=contracts.filter(c=>c.eventId===filterEvent);
+  if(filterStatus) contracts=contracts.filter(c=>c.status===filterStatus);
+  if(search) contracts=contracts.filter(c=>c.workerName.includes(search)||c.phone.includes(search));
+  const signed=contracts.filter(c=>c.status==='signed');
+
+  return `
+  <div class="page-header">
+    <div><div class="page-title">✍️ 계약자 관리</div><div class="page-sub">전체 ${contracts.length}명 · 서명완료 ${signed.length}명</div></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-secondary btn-sm" onclick="downloadExcel()">📊 엑셀 다운로드</button>
+      <button class="btn btn-primary btn-sm" onclick="downloadAllPDF()">📥 전체 ZIP (인쇄용)</button>
+    </div>
+  </div>
+  <div class="filter-bar">
+    <input class="form-input" placeholder="🔍 이름·전화번호 검색" style="max-width:200px" id="srch-name" value="${search}" oninput="refreshContracts()">
+    <select class="form-select" style="max-width:180px" id="srch-event" onchange="refreshContracts()">
+      <option value="">전체 행사</option>
+      ${events.map(e=>`<option value="${e.id}" ${filterEvent===e.id?'selected':''}>${e.name}</option>`).join('')}
+    </select>
+    <select class="form-select" style="max-width:130px" id="srch-status" onchange="refreshContracts()">
+      <option value="">전체 상태</option>
+      <option value="signed" ${filterStatus==='signed'?'selected':''}>서명완료</option>
+      <option value="pending" ${filterStatus==='pending'?'selected':''}>미서명</option>
+    </select>
+  </div>
+  ${contracts.length===0?`<div class="card"><div class="empty-state"><div class="empty-icon">📝</div><p>계약 내역이 없습니다</p></div></div>`:
+  `<div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>이름</th><th>연락처</th><th>은행/계좌</th><th>행사명</th><th>계약 날짜</th><th>서명</th><th>액션</th>
+      </tr></thead>
+      <tbody>
+        ${contracts.map(c=>{
+          const ev=events.find(e=>e.id===c.eventId);
+          return `<tr>
+            <td style="font-weight:600">${c.workerName}</td>
+            <td>${c.phone}</td>
+            <td style="font-size:12px">${c.bankName||'-'}<br><span style="color:var(--t3)">${c.accountNumber?maskAccount(c.accountNumber):'-'}</span></td>
+            <td>${ev?ev.name:'알 수 없음'}</td>
+            <td style="font-size:12px;color:var(--t2)">${c.signedAt?fmtDT(c.signedAt):'-'}</td>
+            <td><span class="badge badge-${c.status==='signed'?'green':'amber'}">${c.status==='signed'?'✓ 완료':'⏳ 대기'}</span></td>
+            <td>
+              <div style="display:flex;gap:4px">
+                <button class="btn btn-sm btn-primary" onclick="viewContractDetail('${c.id}')">상세·PDF</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteContract('${c.id}')">삭제</button>
+              </div>
+            </td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+  </div>`}`;
+}
+
+function refreshContracts(){
+  const s=document.getElementById('srch-name')?.value||'';
+  const ev=document.getElementById('srch-event')?.value||'';
+  const st=document.getElementById('srch-status')?.value||'';
+  document.getElementById('content').innerHTML=renderContracts(ev,st,s);
+}
+
+function maskAccount(acc){
+  if(!acc||acc.length<4) return acc;
+  return acc.slice(0,-4).replace(/\d/g,'*')+acc.slice(-4);
+}
+
+// ── Templates ──────────────────────────────────────
+function renderTemplates(){
+  const tmpls=DB.get('templates');
+  return `
+  <div class="page-header">
+    <div><div class="page-title">📄 계약서 템플릿</div><div class="page-sub">행사 유형별 계약서 양식을 관리합니다</div></div>
+    <button class="btn btn-primary" onclick="openTemplateModal()">+ 새 템플릿</button>
+  </div>
+  <div class="grid2">
+    ${tmpls.map(t=>`
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+        <div style="font-size:14px;font-weight:700">${t.name}</div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-sm btn-secondary" onclick="editTemplate('${t.id}')">수정</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteTemplate('${t.id}')">삭제</button>
+        </div>
+      </div>
+      <div style="background:var(--surface2);border-radius:8px;padding:12px;font-size:12px;color:var(--t2);white-space:pre-wrap;max-height:140px;overflow:hidden;line-height:1.7">${t.content.slice(0,280)}${t.content.length>280?'…':''}</div>
+      <div style="margin-top:10px;font-size:11px;color:var(--t3)">등록일: ${fmt(t.createdAt)}</div>
+    </div>`).join('')}
+    ${tmpls.length===0?`<div class="card"><div class="empty-state"><div class="empty-icon">📄</div><p>템플릿을 추가하세요</p></div></div>`:''}
+  </div>`;
+}
+
+// ── Stats ──────────────────────────────────────────
+function renderStats(){
+  const events=DB.get('events'), contracts=DB.get('contracts');
+  const signed=contracts.filter(c=>c.status==='signed');
+  const pending=contracts.filter(c=>c.status==='pending');
+  const totalPay=signed.reduce((s,c)=>{const ev=events.find(e=>e.id===c.eventId);return s+(ev?Number(ev.pay):0);},0);
+  const rate=contracts.length?Math.round(signed.length/contracts.length*100):0;
+
+  return `
+  <div class="page-header">
+    <div><div class="page-title">📈 통계</div><div class="page-sub">계약 현황 및 급여 통계</div></div>
+    <button class="btn btn-secondary btn-sm" onclick="downloadCSV()">📤 CSV 내보내기</button>
+  </div>
+  <div class="stats-grid" style="margin-bottom:24px">
+    <div class="stat-card blue"><div class="stat-label">전체 계약</div><div class="stat-value">${contracts.length}</div></div>
+    <div class="stat-card green"><div class="stat-label">서명 완료</div><div class="stat-value">${signed.length}</div></div>
+    <div class="stat-card amber"><div class="stat-label">완료율</div><div class="stat-value">${rate}%</div></div>
+    <div class="stat-card purple"><div class="stat-label">급여 총합</div><div class="stat-value" style="font-size:18px">₩${totalPay.toLocaleString()}</div></div>
+  </div>
+  <div class="grid2" style="gap:16px">
+    <div class="card">
+      <div class="section-title">🎪 행사별 계약 현황</div>
+      <canvas id="chart-events" height="200"></canvas>
+    </div>
+    <div class="card">
+      <div class="section-title">✅ 서명 완료율</div>
+      <canvas id="chart-rate" height="200"></canvas>
+    </div>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <div class="section-title">💰 행사별 급여 현황</div>
+    <div class="table-wrap" style="border:none;border-radius:0">
+      <table>
+        <thead><tr><th>행사명</th><th>날짜</th><th>완료/전체</th><th>단가</th><th>지급 예상액</th></tr></thead>
+        <tbody>
+          ${events.map(ev=>{
+            const cnt=contracts.filter(c=>c.eventId===ev.id);
+            const s=cnt.filter(c=>c.status==='signed').length;
+            return `<tr>
+              <td style="font-weight:600">${ev.name}</td>
+              <td>${fmt(ev.date)}</td>
+              <td><span class="badge badge-${s===cnt.length&&cnt.length>0?'green':'amber'}">${s}/${cnt.length}</span></td>
+              <td>${money(ev.pay)}</td>
+              <td style="font-weight:700;color:var(--blue)">₩${(s*Number(ev.pay)).toLocaleString()}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+
+// ── QR 출석체크 페이지 ──────────────────────────────
+let attSelectedEvent = '';
+let attScanActive = false;
+let attVideoStream = null;
+let attScanInterval = null;
+
+function renderAttendance(){
+  const events = DB.get('events');
+  const logs = DB.get('att_logs'); // {id, eventId, workerName, time, type:'in'|'out'}
+  const sel = attSelectedEvent || (events[0]?.id || '');
+  attSelectedEvent = sel;
+
+  const evLogs = logs.filter(l => l.eventId === sel);
+  const inLogs = evLogs.filter(l => l.type === 'in');
+  const outLogs = evLogs.filter(l => l.type === 'out');
+  const curEv = events.find(e => e.id === sel);
+  const contracts = DB.get('contracts').filter(c => c.eventId === sel);
+
+  return `
+  <style>
+  .att-grid{display:grid;grid-template-columns:340px 1fr;gap:16px;align-items:start}
+  .att-scanner-box{background:var(--navy);border-radius:18px;padding:20px;color:#fff;position:sticky;top:76px}
+  .att-scanner-title{font-size:15px;font-weight:700;margin-bottom:4px}
+  .att-scanner-sub{font-size:11px;color:rgba(255,255,255,.45);margin-bottom:16px}
+  .att-video-wrap{background:#000;border-radius:12px;overflow:hidden;aspect-ratio:1;position:relative;margin-bottom:12px}
+  #att-video{width:100%;height:100%;object-fit:cover;display:block}
+  .att-scan-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+  .att-scan-frame{width:60%;aspect-ratio:1;border:2px solid rgba(59,110,240,.8);border-radius:10px;position:relative}
+  .att-scan-frame::before,.att-scan-frame::after{content:'';position:absolute;width:20px;height:20px;border-color:#3b6ef0;border-style:solid}
+  .att-scan-frame::before{top:-2px;left:-2px;border-width:3px 0 0 3px;border-radius:4px 0 0 4px}
+  .att-scan-frame::after{bottom:-2px;right:-2px;border-width:0 3px 3px 0;border-radius:0 0 4px 0}
+  @keyframes scanLine{0%{top:10%}100%{top:90%}}
+  .att-scan-line{position:absolute;left:5%;right:5%;height:2px;background:linear-gradient(90deg,transparent,#3b6ef0,transparent);animation:scanLine 2s ease-in-out infinite;border-radius:1px}
+  .att-manual-input{display:flex;gap:8px;margin-bottom:12px}
+  .att-manual-input input{flex:1;padding:10px 13px;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);border-radius:10px;color:#fff;font-family:'Freesentation',sans-serif;font-size:13px;outline:none}
+  .att-manual-input input::placeholder{color:rgba(255,255,255,.3)}
+  .att-manual-input input:focus{border-color:#3b6ef0}
+  .att-btn-in{padding:10px;border-radius:10px;border:none;background:linear-gradient(135deg,#059669,#10b981);color:#fff;font-family:'Freesentation',sans-serif;font-weight:700;font-size:13px;cursor:pointer;flex:1;transition:all .15s}
+  .att-btn-out{padding:10px;border-radius:10px;border:none;background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff;font-family:'Freesentation',sans-serif;font-weight:700;font-size:13px;cursor:pointer;flex:1;transition:all .15s}
+  .att-btn-in:hover{transform:translateY(-1px)}.att-btn-out:hover{transform:translateY(-1px)}
+  .att-result{background:rgba(255,255,255,.07);border-radius:10px;padding:12px;min-height:60px;font-size:13px;margin-bottom:12px;border:1.5px solid rgba(255,255,255,.1)}
+  .att-result.success{background:rgba(16,185,129,.15);border-color:rgba(16,185,129,.4)}
+  .att-result.error{background:rgba(239,68,68,.15);border-color:rgba(239,68,68,.4)}
+  .att-stats-row{display:flex;gap:8px;margin-bottom:12px}
+  .att-stat{flex:1;background:rgba(255,255,255,.07);border-radius:10px;padding:10px;text-align:center}
+  .att-stat .n{font-size:22px;font-weight:800;color:#fff}
+  .att-stat .l{font-size:10px;color:rgba(255,255,255,.45);margin-top:2px}
+  .att-log-list{max-height:200px;overflow-y:auto}
+  .att-log-item{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:12px}
+  .att-log-item:last-child{border-bottom:none}
+  .att-tag-in{background:rgba(16,185,129,.2);color:#6ee7b7;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:700;flex-shrink:0}
+  .att-tag-out{background:rgba(239,68,68,.2);color:#fca5a5;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:700;flex-shrink:0}
+  #att-cam-btn{width:100%;padding:11px;border-radius:10px;border:1.5px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;font-family:'Freesentation',sans-serif;font-weight:600;font-size:13px;cursor:pointer;margin-bottom:10px;transition:all .15s}
+  #att-cam-btn:hover{background:rgba(255,255,255,.15)}
+  #att-cam-btn.active{background:rgba(59,110,240,.3);border-color:#3b6ef0}
+  <\/style>
+
+  <div class="page-header">
+    <div><div class="page-title">📡 QR 출석체크</div><div class="page-sub">행사별 스태프 출·퇴근을 실시간으로 관리합니다</div></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <select class="form-select" style="min-width:200px" onchange="attSelectedEvent=this.value;render()">
+        ${events.map(e=>`<option value="${e.id}" ${e.id===sel?'selected':''}>${e.name}</option>`).join('')}
+      </select>
+      <button class="btn btn-sm" style="background:linear-gradient(135deg,#0f172a,#1e3a8a);color:#fff;border:none;box-shadow:0 2px 8px rgba(15,23,42,.3)" onclick="openAttendancePage('${sel}')">
+        📱 태블릿·핸드폰 전용화면 열기 ↗
+      </button>
+      <button class="btn btn-secondary btn-sm" onclick="clearAttLogs('${sel}')">기록 초기화</button>
+      <button class="btn btn-success btn-sm" onclick="downloadAttExcel('${sel}')">📊 출석 엑셀</button>
+    </div>
+  </div>
+
+  ${events.length===0?`<div class="card"><div class="empty-state"><div class="empty-icon">🎪</div><p>행사를 먼저 등록하세요</p></div></div>`:`
+  <div class="att-grid">
+
+    <!-- 스캐너 패널 -->
+    <div class="att-scanner-box">
+      <div class="att-scanner-title">📷 QR / 이름 출석 처리</div>
+      <div class="att-scanner-sub">${curEv?.name || ''} · ${fmt(curEv?.date)}</div>
+
+      <!-- 카메라 뷰 -->
+      <div class="att-video-wrap" id="att-video-wrap">
+        <video id="att-video" autoplay playsinline muted></video>
+        <canvas id="att-qr-canvas" style="display:none"></canvas>
+        <div class="att-scan-overlay" id="att-scan-overlay" style="display:none">
+          <div class="att-scan-frame">
+            <div class="att-scan-line"></div>
+          </div>
+        </div>
+        <div id="att-cam-placeholder" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:rgba(255,255,255,.3);font-size:13px">
+          <div style="font-size:36px">📷</div>
+          <div>카메라 켜기를 눌러주세요</div>
+        </div>
+      </div>
+
+      <button id="att-cam-btn" onclick="toggleCamera()">📷 카메라 켜기</button>
+
+      <div style="font-size:11px;color:rgba(255,255,255,.3);margin-bottom:8px;text-align:center">— 또는 이름으로 직접 처리 —</div>
+
+      <!-- 이름 수동 입력 -->
+      <div class="att-manual-input">
+        <input id="att-name-input" placeholder="이름 또는 전화번호 마지막 4자리" onkeydown="if(event.key==='Enter')attProcess('in')">
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <button class="att-btn-in" onclick="attProcess('in')">✅ 출근</button>
+        <button class="att-btn-out" onclick="attProcess('out')">🚪 퇴근</button>
+      </div>
+
+      <!-- 결과창 -->
+      <div class="att-result" id="att-result">
+        <span style="color:rgba(255,255,255,.3)">스캔하거나 이름을 입력하세요</span>
+      </div>
+
+      <!-- 오늘 통계 -->
+      <div class="att-stats-row">
+        <div class="att-stat"><div class="n">${inLogs.length}</div><div class="l">출근</div></div>
+        <div class="att-stat"><div class="n">${outLogs.length}</div><div class="l">퇴근</div></div>
+        <div class="att-stat"><div class="n">${Math.max(0,inLogs.length-outLogs.length)}</div><div class="l">현재 근무중</div></div>
+      </div>
+
+      <!-- 최근 기록 -->
+      <div style="font-size:11px;color:rgba(255,255,255,.4);margin-bottom:6px;font-weight:600">최근 처리 기록</div>
+      <div class="att-log-list" id="att-recent-log">
+        ${evLogs.slice(-8).reverse().map(l=>`
+        <div class="att-log-item">
+          <span class="${l.type==='in'?'att-tag-in':'att-tag-out'}">${l.type==='in'?'출근':'퇴근'}</span>
+          <span style="color:rgba(255,255,255,.8);font-weight:600;flex:1">${l.workerName}</span>
+          <span style="color:rgba(255,255,255,.35)">${fmtDT(l.time)}</span>
+        </div>`).join('') || '<div style="color:rgba(255,255,255,.25);font-size:12px">아직 기록이 없습니다</div>'}
+      </div>
+    </div>
+
+    <!-- 오른쪽: 전체 명단 -->
+    <div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="section-title">👥 스태프 명단 & 출석 현황</div>
+        <div style="font-size:12px;color:var(--t3);margin-bottom:12px">${curEv?.name || ''} 계약 완료 스태프 기준</div>
+        ${contracts.length===0?`<div class="empty-state" style="padding:20px"><div class="empty-icon" style="font-size:28px">📝</div><p>계약 완료된 스태프가 없습니다</p></div>`:
+        `<div class="table-wrap" style="border:none">
+          <table>
+            <thead><tr><th>이름</th><th>연락처</th><th>출근</th><th>퇴근</th><th>근무시간</th><th>수동처리</th></tr></thead>
+            <tbody>
+            ${contracts.map(c=>{
+              const cin = evLogs.filter(l=>l.workerName===c.workerName&&l.type==='in').slice(-1)[0];
+              const cout = evLogs.filter(l=>l.workerName===c.workerName&&l.type==='out').slice(-1)[0];
+              let workMin = '';
+              if(cin&&cout){
+                const mins=Math.round((new Date(cout.time)-new Date(cin.time))/60000);
+                workMin = `${Math.floor(mins/60)}h ${mins%60}m`;
+              }
+              const status = cin&&cout?'완료':cin?'근무중':'미출근';
+              const statusColor = status==='완료'?'green':status==='근무중'?'blue':'gray';
+              return `<tr>
+                <td style="font-weight:600">${c.workerName}</td>
+                <td style="font-size:12px;color:var(--t2)">${c.phone}</td>
+                <td style="font-size:12px">${cin?fmtDT(cin.time):'<span style="color:var(--t3)">-</span>'}</td>
+                <td style="font-size:12px">${cout?fmtDT(cout.time):'<span style="color:var(--t3)">-</span>'}</td>
+                <td><span class="badge badge-${statusColor}">${status==='완료'?workMin||'완료':status}</span></td>
+                <td>
+                  <div style="display:flex;gap:4px">
+                    <button class="btn btn-sm btn-success" style="padding:4px 9px;font-size:11px" onclick="attManual('${c.workerName}','in','${sel}')">출근</button>
+                    <button class="btn btn-sm btn-danger" style="padding:4px 9px;font-size:11px" onclick="attManual('${c.workerName}','out','${sel}')">퇴근</button>
+                    <button class="btn btn-sm btn-ghost" style="padding:4px 9px;font-size:11px" onclick="attDeleteLast('${c.workerName}','${sel}')">취소</button>
+                  </div>
+                </td>
+              </tr>`;
+            }).join('')}
+            </tbody>
+          </table>
+        </div>`}
+      </div>
+
+      <!-- 전체 로그 타임라인 -->
+      <div class="card">
+        <div class="section-title">📋 전체 출석 타임라인</div>
+        ${evLogs.length===0?`<div class="empty-state" style="padding:16px"><p>출석 기록이 없습니다</p></div>`:
+        `<div style="max-height:320px;overflow-y:auto">
+          <table>
+            <thead><tr><th>시간</th><th>이름</th><th>구분</th><th>처리방식</th></tr></thead>
+            <tbody>
+            ${evLogs.slice().reverse().map(l=>`<tr>
+              <td style="font-size:12px;color:var(--t2)">${fmtDT(l.time)}</td>
+              <td style="font-weight:600">${l.workerName}</td>
+              <td><span class="badge badge-${l.type==='in'?'green':'red'}">${l.type==='in'?'✅ 출근':'🚪 퇴근'}</span></td>
+              <td style="font-size:11px;color:var(--t3)">${l.method||'수동'}</td>
+            </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>`}
+      </div>
+    </div>
+  </div>`}`;
+}
+
+// ── 출석 처리 함수들 ────────────────────────────────
+function attProcess(type){
+  const input = document.getElementById('att-name-input');
+  if(!input) return;
+  const query = input.value.trim();
+  if(!query){toast('이름 또는 전화번호 뒷 4자리를 입력하세요','error');return;}
+  const eventId = attSelectedEvent;
+  const contracts = DB.get('contracts').filter(c=>c.eventId===eventId);
+  // 이름 또는 전화번호 마지막 4자리로 검색
+  const found = contracts.find(c=>
+    c.workerName.includes(query) ||
+    (c.phone&&c.phone.replace(/-/g,'').slice(-4)===query.replace(/-/g,'').slice(-4))
+  );
+  if(!found){
+    attShowResult(false, `'${query}' — 해당 계약자를 찾을 수 없습니다`);
+    return;
+  }
+  attAddLog(found.workerName, type, eventId, '수동입력');
+  input.value='';
+  attShowResult(true, found.workerName, type);
+  render();
+}
+
+function attManual(name, type, eventId){
+  attAddLog(name, type, eventId, '관리자수동');
+  toast(`${name} ${type==='in'?'출근':'퇴근'} 처리 완료`,'success');
+  render();
+}
+
+function attDeleteLast(name, eventId){
+  const logs = DB.get('att_logs');
+  const idx = logs.map((l,i)=>({...l,i})).filter(l=>l.eventId===eventId&&l.workerName===name).slice(-1)[0];
+  if(!idx){toast('삭제할 기록이 없습니다','error');return;}
+  logs.splice(idx.i,1);
+  DB.set('att_logs',logs);
+  toast(`${name} 마지막 기록 삭제`,'info');
+  render();
+}
+
+function attAddLog(workerName, type, eventId, method){
+  const logs = DB.get('att_logs');
+  logs.push({id:uid(), eventId, workerName, type, time:new Date().toISOString(), method});
+  DB.set('att_logs', logs);
+}
+
+function attShowResult(ok, name, type){
+  const el = document.getElementById('att-result');
+  if(!el) return;
+  el.className = 'att-result ' + (ok?'success':'error');
+  if(ok){
+    el.innerHTML = `<div style="font-size:15px;font-weight:800;color:#6ee7b7;margin-bottom:2px">${type==='in'?'✅ 출근':'🚪 퇴근'} 완료</div>
+    <div style="font-size:14px;color:#fff">${name}</div>
+    <div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:4px">${new Date().toLocaleTimeString('ko-KR')}</div>`;
+  } else {
+    el.innerHTML = `<div style="font-size:13px;color:#fca5a5">❌ ${name}</div>`;
+  }
+  setTimeout(()=>{
+    if(el) el.className='att-result', el.innerHTML='<span style="color:rgba(255,255,255,.3)">스캔하거나 이름을 입력하세요</span>';
+  },3000);
+}
+
+function clearAttLogs(eventId){
+  if(!confirm('이 행사의 출석 기록을 모두 삭제하시겠습니까?'))return;
+  DB.set('att_logs', DB.get('att_logs').filter(l=>l.eventId!==eventId));
+  toast('출석 기록이 초기화되었습니다','info');
+  render();
+}
+
+function downloadAttExcel(eventId){
+  const events=DB.get('events'), logs=DB.get('att_logs').filter(l=>l.eventId===eventId);
+  const ev=events.find(e=>e.id===eventId)||{};
+  const contracts=DB.get('contracts').filter(c=>c.eventId===eventId);
+  const rows=[['이름','연락처','출근시간','퇴근시간','근무시간','처리방식']];
+  contracts.forEach(c=>{
+    const cin=logs.filter(l=>l.workerName===c.workerName&&l.type==='in').slice(-1)[0];
+    const cout=logs.filter(l=>l.workerName===c.workerName&&l.type==='out').slice(-1)[0];
+    let workTime='';
+    if(cin&&cout){const m=Math.round((new Date(cout.time)-new Date(cin.time))/60000);workTime=`${Math.floor(m/60)}h ${m%60}m`;}
+    rows.push([c.workerName,c.phone,cin?fmtDT(cin.time):'-',cout?fmtDT(cout.time):'-',workTime,cin?.method||'-']);
+  });
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols']=[{wch:12},{wch:15},{wch:18},{wch:18},{wch:10},{wch:10}];
+  XLSX.utils.book_append_sheet(wb,ws,'출석명단');
+  XLSX.writeFile(wb,`출석명단_${ev.name||'행사'}_${new Date().toLocaleDateString('ko-KR').replace(/\./g,'').replace(/ /g,'')}.xlsx`);
+  toast('출석 엑셀이 다운로드되었습니다','success');
+}
+
+// ── 카메라 QR 스캔 ──────────────────────────────────
+async function toggleCamera(){
+  const btn = document.getElementById('att-cam-btn');
+  const placeholder = document.getElementById('att-cam-placeholder');
+  const overlay = document.getElementById('att-scan-overlay');
+  const video = document.getElementById('att-video');
+  if(!btn) return;
+
+  if(attScanActive){
+    // 카메라 끄기
+    attScanActive = false;
+    if(attVideoStream){attVideoStream.getTracks().forEach(t=>t.stop());attVideoStream=null;}
+    if(attScanInterval){clearInterval(attScanInterval);attScanInterval=null;}
+    btn.textContent='📷 카메라 켜기'; btn.classList.remove('active');
+    if(placeholder) placeholder.style.display='flex';
+    if(overlay) overlay.style.display='none';
+    if(video) video.style.display='none';
+    return;
+  }
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});
+    attVideoStream = stream;
+    attScanActive = true;
+    if(placeholder) placeholder.style.display='none';
+    if(video){video.style.display='block'; video.srcObject=stream;}
+    if(overlay) overlay.style.display='flex';
+    btn.textContent='⏹ 카메라 끄기'; btn.classList.add('active');
+
+    // BarcodeDetector API (크롬/안드로이드 지원)
+    if('BarcodeDetector' in window){
+      const detector = new BarcodeDetector({formats:['qr_code']});
+      const canvas = document.getElementById('att-qr-canvas');
+      attScanInterval = setInterval(async()=>{
+        if(!video||video.readyState<2) return;
+        const ctx = canvas.getContext('2d');
+        canvas.width=video.videoWidth; canvas.height=video.videoHeight;
+        ctx.drawImage(video,0,0);
+        try{
+          const barcodes = await detector.detect(canvas);
+          if(barcodes.length>0){
+            const val = barcodes[0].rawValue;
+            attProcessQRValue(val);
+          }
+        }catch(e){}
+      },500);
+    } else {
+      // BarcodeDetector 미지원 브라우저 안내
+      toast('이 브라우저는 자동 QR 스캔을 지원하지 않습니다. 이름을 직접 입력해 주세요.','info');
+    }
+  } catch(e){
+    toast('카메라 접근 권한이 필요합니다. 브라우저 설정에서 허용해 주세요.','error');
+  }
+}
+
+function attProcessQRValue(val){
+  // 계약 링크 토큰에서 이름 찾기
+  // QR 값이 링크면 토큰 추출, 아니면 이름으로 간주
+  const token = val.includes('evt_') ? val.split('evt_').pop().split('/').pop() : null;
+  const eventId = attSelectedEvent;
+  const contracts = DB.get('contracts').filter(c=>c.eventId===eventId);
+
+  let found = null;
+  if(token){
+    // 이 행사의 계약자 중 이미 처리 안 된 사람 → 첫 번째 미출근자
+    const logs = DB.get('att_logs').filter(l=>l.eventId===eventId&&l.type==='in');
+    found = contracts.find(c=>!logs.some(l=>l.workerName===c.workerName));
+  } else {
+    found = contracts.find(c=>c.workerName===val||c.phone===val);
+  }
+
+  if(found){
+    const logs=DB.get('att_logs').filter(l=>l.eventId===eventId&&l.workerName===found.workerName);
+    const hasIn=logs.some(l=>l.type==='in');
+    const type = hasIn?'out':'in';
+    attAddLog(found.workerName, type, eventId, 'QR스캔');
+    attShowResult(true, found.workerName, type);
+    render();
+  } else {
+    attShowResult(false, val);
+  }
+}
+
+function renderCharts(){
+  const events=DB.get('events'), contracts=DB.get('contracts');
+  // Chart 1 - event contracts
+  const c1=document.getElementById('chart-events');
+  if(!c1) return;
+  const ctx1=c1.getContext('2d');
+  const labels=events.map(e=>e.name.length>8?e.name.slice(0,8)+'…':e.name);
+  const signedCounts=events.map(e=>contracts.filter(c=>c.eventId===e.id&&c.status==='signed').length);
+  const pendingCounts=events.map(e=>contracts.filter(c=>c.eventId===e.id&&c.status==='pending').length);
+  drawBarChart(ctx1,labels,signedCounts,pendingCounts);
+  // Chart 2 - rate pie
+  const c2=document.getElementById('chart-rate');
+  const ctx2=c2.getContext('2d');
+  const s=contracts.filter(c=>c.status==='signed').length;
+  const p=contracts.filter(c=>c.status==='pending').length;
+  drawPieChart(ctx2,s,p);
+}
+
+function drawBarChart(ctx,labels,d1,d2){
+  const w=ctx.canvas.width=ctx.canvas.offsetWidth||400, h=ctx.canvas.height=200;
+  ctx.clearRect(0,0,w,h);
+  if(!labels.length){ctx.fillStyle='#9aa5bb';ctx.textAlign='center';ctx.font='13px Freesentation';ctx.fillText('데이터 없음',w/2,h/2);return;}
+  const pad=40,bw=Math.min(50,(w-pad*2)/labels.length-10),gap=(w-pad*2)/labels.length;
+  const maxV=Math.max(...d1.map((v,i)=>v+d2[i]),1);
+  ctx.fillStyle='#f1f4f9';ctx.fillRect(0,0,w,h);
+  labels.forEach((lbl,i)=>{
+    const x=pad+i*gap+gap/2;
+    const s1=d1[i]/(maxV)*((h-60));
+    const s2=d2[i]/(maxV)*((h-60));
+    ctx.fillStyle='#3b6ef0'; ctx.beginPath(); ctx.roundRect(x-bw/2,h-30-s1,bw,s1,4); ctx.fill();
+    ctx.fillStyle='#f59e0b'; ctx.beginPath(); ctx.roundRect(x-bw/2-2,h-30-s1-s2,bw,s2,4); ctx.fill();
+    ctx.fillStyle='#5a6a85'; ctx.font='11px Freesentation'; ctx.textAlign='center'; ctx.fillText(lbl,x,h-8);
+  });
+  ctx.fillStyle='#3b6ef0';ctx.fillRect(w-100,10,12,10);ctx.fillStyle='#1a2233';ctx.font='11px Freesentation';ctx.textAlign='left';ctx.fillText('완료',w-84,20);
+  ctx.fillStyle='#f59e0b';ctx.fillRect(w-100,26,12,10);ctx.fillText('대기',w-84,36);
+}
+
+function drawPieChart(ctx,s,p){
+  const w=ctx.canvas.width=ctx.canvas.offsetWidth||300, h=ctx.canvas.height=200;
+  ctx.clearRect(0,0,w,h);
+  const total=s+p;
+  if(total===0){ctx.fillStyle='#9aa5bb';ctx.textAlign='center';ctx.font='13px Freesentation';ctx.fillText('데이터 없음',w/2,h/2);return;}
+  const cx=w/2-40,cy=h/2,r=70;
+  const sa=-Math.PI/2, ea=sa+(s/total)*Math.PI*2;
+  ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,sa,ea);ctx.fillStyle='#3b6ef0';ctx.fill();
+  ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,ea,sa+Math.PI*2);ctx.fillStyle='#e4e8f0';ctx.fill();
+  ctx.beginPath();ctx.arc(cx,cy,r*0.5,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();
+  ctx.fillStyle='#1a2233';ctx.font='600 16px Freesentation';ctx.textAlign='center';ctx.fillText(Math.round(s/total*100)+'%',cx,cy+6);
+  const lx=w-110;
+  ctx.fillStyle='#3b6ef0';ctx.fillRect(lx,h/2-20,14,14);ctx.fillStyle='#1a2233';ctx.font='12px Freesentation';ctx.textAlign='left';ctx.fillText(`서명완료 ${s}명`,lx+20,h/2-9);
+  ctx.fillStyle='#e4e8f0';ctx.strokeStyle='#ccc';ctx.fillRect(lx,h/2+4,14,14);ctx.fillText(`미서명 ${p}명`,lx+20,h/2+15);
+}
+
+// ── Event CRUD ─────────────────────────────────────
+function resetEventForm(){
+  ['ev-name','ev-location','ev-date','ev-gather-time','ev-start','ev-end','ev-pay','ev-contact','ev-memo'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  const eid=document.getElementById('event-edit-id'); if(eid) eid.value='';
+  document.getElementById('event-modal-title').textContent='🎪 새 행사 만들기';
+}
+
+function openModal(id){
+  document.getElementById(id).style.display='flex';
+}
+function closeModal(id){
+  document.getElementById(id).style.display='none';
+}
+
+function saveEvent(){
+  const name=document.getElementById('ev-name').value.trim();
+  const location=document.getElementById('ev-location').value.trim();
+  const date=document.getElementById('ev-date').value;
+  const pay=document.getElementById('ev-pay').value;
+  if(!name||!location||!date||!pay){toast('행사명, 장소, 날짜, 급여를 입력하세요','error');return;}
+  const editId=document.getElementById('event-edit-id').value;
+  const events=DB.get('events');
+  if(editId){
+    const idx=events.findIndex(e=>e.id===editId);
+    if(idx>-1){
+      events[idx]={...events[idx],name,location,date,pay:Number(pay),
+        gatherTime:document.getElementById('ev-gather-time').value,
+        startTime:document.getElementById('ev-start').value,
+        endTime:document.getElementById('ev-end').value,
+        contact:document.getElementById('ev-contact').value,
+        templateId:document.getElementById('ev-template').value,
+        memo:document.getElementById('ev-memo').value};
+      DB.set('events',events);
+      toast('행사가 수정되었습니다','success');
+    }
+  } else {
+    const id=uid();
+    const ev={id,name,location,date,pay:Number(pay),
+      gatherTime:document.getElementById('ev-gather-time').value,
+      startTime:document.getElementById('ev-start').value,
+      endTime:document.getElementById('ev-end').value,
+      contact:document.getElementById('ev-contact').value,
+      templateId:document.getElementById('ev-template').value,
+      memo:document.getElementById('ev-memo').value,
+      token:'evt_'+id,status:'active',createdAt:new Date().toISOString()};
+    events.push(ev);
+    DB.set('events',events);
+    toast('행사가 생성되었습니다! 링크·QR을 확인하세요','success');
+    setTimeout(()=>showEventDetail(id),400);
+  }
+  closeModal('modal-event');
+  if(currentPage==='events'||currentPage==='dashboard') render();
+}
+
+function editEvent(id){
+  const ev=DB.get('events').find(e=>e.id===id);
+  if(!ev) return;
+  document.getElementById('event-edit-id').value=id;
+  document.getElementById('ev-name').value=ev.name||'';
+  document.getElementById('ev-location').value=ev.location||'';
+  document.getElementById('ev-date').value=ev.date||'';
+  document.getElementById('ev-gather-time').value=ev.gatherTime||'';
+  document.getElementById('ev-start').value=ev.startTime||'';
+  document.getElementById('ev-end').value=ev.endTime||'';
+  document.getElementById('ev-pay').value=ev.pay||'';
+  document.getElementById('ev-contact').value=ev.contact||'';
+  document.getElementById('ev-memo').value=ev.memo||'';
+  document.getElementById('event-modal-title').textContent='✏️ 행사 수정';
+  afterRender();
+  setTimeout(()=>{
+    const sel=document.getElementById('ev-template');
+    if(sel) sel.value=ev.templateId||'';
+  },50);
+  openModal('modal-event');
+}
+
+function deleteEvent(id){
+  if(!confirm('이 행사를 삭제하시겠습니까? 관련 계약도 삭제됩니다.')) return;
+  const events=DB.get('events').filter(e=>e.id!==id);
+  const contracts=DB.get('contracts').filter(c=>c.eventId!==id);
+  DB.set('events',events); DB.set('contracts',contracts);
+  toast('행사가 삭제되었습니다','info'); render();
+}
+
+function showEventDetail(id){
+  const ev=DB.get('events').find(e=>e.id===id);
+  if(!ev) return;
+  const link=window.location.href.replace(/#.*/,'')+'#sign/'+ev.token;
+  const body=document.getElementById('event-detail-body');
+  body.innerHTML=`
+    <div style="margin-bottom:16px">
+      <div style="font-size:18px;font-weight:700;margin-bottom:4px">${ev.name}</div>
+      <div style="color:var(--t2);font-size:13px">${fmt(ev.date)} · ${ev.location}</div>
+    </div>
+    <div class="grid2" style="gap:16px;margin-bottom:16px">
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--t2);margin-bottom:8px">🔗 계약 링크</div>
+        <div class="link-box" onclick="copyLink('${link}')">${link}</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:6px">클릭하면 복사됩니다</div>
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <button class="btn btn-secondary btn-sm" onclick="copyLink('${link}')">📋 링크 복사</button>
+          <button class="btn btn-primary btn-sm" onclick="openSignPreview('${id}')">📱 미리보기</button>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--t2);margin-bottom:8px">📱 QR 코드</div>
+        <div class="qr-box">
+          <div id="qr-container" style="width:160px;height:160px"></div>
+          <div style="font-size:11px;color:var(--t3);margin-top:8px">${ev.name}</div>
+        </div>
+      </div>
+    </div>
+    <div style="background:var(--surface2);border-radius:10px;padding:14px;font-size:13px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div><span style="color:var(--t3)">집합시간:</span> <strong>${ev.gatherTime||'-'}</strong></div>
+        <div><span style="color:var(--t3)">근무시간:</span> <strong>${ev.startTime||'-'} ~ ${ev.endTime||'-'}</strong></div>
+        <div><span style="color:var(--t3)">급여:</span> <strong style="color:var(--blue)">${money(ev.pay)}</strong></div>
+        <div><span style="color:var(--t3)">담당자:</span> <strong>${ev.contact||'-'}</strong></div>
+      </div>
+    </div>
+    <div style="margin-top:16px">
+      <div style="font-size:12px;font-weight:600;color:var(--t2);margin-bottom:10px">📤 공유하기</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="shareKakao('${link}','${ev.name}')" style="display:flex;align-items:center;gap:8px;padding:10px 18px;background:#FEE500;border:none;border-radius:10px;font-size:13px;font-weight:700;color:#391B1B;cursor:pointer;font-family:'Freesentation',sans-serif;transition:all .15s;box-shadow:0 2px 8px rgba(254,229,0,.4)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#391B1B"><path d="M12 3C6.48 3 2 6.69 2 11.25c0 2.88 1.74 5.42 4.38 6.97l-.97 3.56 4.08-2.56c.82.14 1.67.22 2.51.22 5.52 0 10-3.69 10-8.25S17.52 3 12 3z"/></svg>
+          카카오톡 공유
+        </button>
+        <button onclick="shareWeb('${link}','${ev.name}')" style="display:flex;align-items:center;gap:8px;padding:10px 18px;background:#25D366;border:none;border-radius:10px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;font-family:'Freesentation',sans-serif;transition:all .15s">
+          💬 링크 공유
+        </button>
+        <button onclick="copyLink('${link}')" style="display:flex;align-items:center;gap:8px;padding:10px 18px;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-weight:600;color:var(--t1);cursor:pointer;font-family:'Freesentation',sans-serif">
+          📋 링크 복사
+        </button>
+      </div>
+    </div>`;
+  openModal('modal-event-detail');
+  setTimeout(()=>{
+    const el=document.getElementById('qr-container');
+    if(el&&typeof QRCode!=='undefined'){
+      el.innerHTML='';
+      new QRCode(el,{text:link,width:160,height:160,colorDark:'#0f172a',colorLight:'#ffffff'});
+    }
+  },100);
+}
+
+function downloadQR(){
+  const canvas=document.querySelector('#qr-container canvas');
+  if(!canvas){toast('QR코드를 먼저 생성하세요','error');return;}
+  const a=document.createElement('a');
+  a.href=canvas.toDataURL('image/png');
+  a.download='QR_계약링크.png';
+  a.click();
+  toast('QR 이미지가 저장되었습니다','success');
+}
+
+function copyLink(link){
+  navigator.clipboard.writeText(link).then(()=>toast('링크가 복사되었습니다!','success')).catch(()=>{
+    const ta=document.createElement('textarea');
+    ta.value=link; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    toast('링크가 복사되었습니다!','success');
+  });
+}
+
+// ── 카카오톡 공유 ──────────────────────────────────
+function shareKakao(link, eventName){
+  // Kakao SDK가 초기화된 경우 사용, 아니면 카카오 앱 스킴으로 fallback
+  if(typeof Kakao !== 'undefined' && Kakao.isInitialized()){
+    Kakao.Share.sendDefault({
+      objectType:'feed',
+      content:{
+        title:'⚡ '+eventName+' — 근로계약서 서명 요청',
+        description:'아래 버튼을 눌러 계약서를 작성하고 서명해 주세요.',
+        imageUrl:'https://via.placeholder.com/400x200/3b6ef0/ffffff?text=ContractOS',
+        link:{mobileWebUrl:link,webUrl:link}
+      },
+      buttons:[{title:'계약서 작성하기',link:{mobileWebUrl:link,webUrl:link}}]
+    });
+  } else {
+    // SDK 미설치 환경: 카카오 공유 URL 방식 (웹)
+    const kakaoShareUrl='https://sharer.kakao.com/talk/friends/picker/link?app_key=YOUR_KAKAO_APP_KEY&validation_action=custom&validation_params='+encodeURIComponent(JSON.stringify({link_ver:'4.0',template_id:'YOUR_TEMPLATE_ID',template_args:{title:eventName,link:link}}));
+    // 실제 앱키 미설정 시 링크 복사 + 안내로 fallback
+    copyLink(link);
+    toast('카카오 앱키 설정 후 공유 가능합니다. 링크가 복사되었습니다!','info');
+    showServerGuide();
+  }
+}
+
+function shareWeb(link, eventName){
+  if(navigator.share){
+    navigator.share({title:eventName+' 근로계약서',text:'계약서를 작성하고 서명해 주세요.',url:link})
+      .then(()=>toast('공유되었습니다','success'))
+      .catch(()=>copyLink(link));
+  } else {
+    // Fallback: WhatsApp / 일반
+    const msg=encodeURIComponent('['+eventName+'] 근로계약서 서명 링크\n'+link);
+    window.open('https://api.whatsapp.com/send?text='+msg,'_blank');
+  }
+}
+
+// ── 서버 연동 가이드 ────────────────────────────────
+function showServerGuide(){
+  document.getElementById('modal-server-guide').style.display='flex';
+}
+
+function openAttendancePage(eventId){
+  // attendance.html 을 별도 탭으로 열기 (같은 폴더에 있어야 함)
+  const base = location.href.replace(/[^/]*$/, '');
+  const url = base + 'attendance.html' + (eventId ? '?event='+eventId : '');
+  window.open(url, '_blank');
+}
+
+function doLogout(){
+  if(!confirm('로그아웃 하시겠습니까?')) return;
+  localStorage.removeItem('cos_session');
+  const base = location.href.replace(/[^/]*$/, '');
+  location.href = base + 'index.html';
+}
+
+function shareNoticeKakao(){
+  if(!currentPrintNotice){toast('안내문을 먼저 열어주세요','error');return;}
+  const n=currentPrintNotice;
+  const msg=`[${n.eventName}] 사전 행사 안내\n\n📅 ${fmt(n.date)}\n📍 ${n.location}\n⏰ 집합: ${n.gatherTime||'-'} / ${n.gatherPlace||'-'}\n👔 복장: ${n.dress||'-'}\n🍱 식사: ${n.meal||'-'}\n\n💼 업무: ${(n.workDesc||'').slice(0,80)}...\n\n문의: ${n.manager||'-'}`;
+  if(navigator.share){
+    navigator.share({title:n.eventName+' 사전안내',text:msg}).catch(()=>{
+      copyTextFallback(msg);toast('내용이 복사되었습니다. 카카오톡에 붙여넣기 하세요','info');
+    });
+  } else {
+    copyTextFallback(msg);toast('안내문이 복사되었습니다. 카카오톡에 붙여넣기 하세요 📋','info');
+  }
+}
+
+function copyTextFallback(text){
+  navigator.clipboard.writeText(text).catch(()=>{
+    const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
+  });
+}
+
+// ── Notice CRUD ────────────────────────────────────
+function openNoticeModal(editId=null){
+  const fields=['nt-event-name','nt-manager','nt-date','nt-location','nt-gather-place','nt-gather-time','nt-dress','nt-work-desc','nt-work-time','nt-caution','nt-extra'];
+  fields.forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('notice-edit-id').value='';
+  document.getElementById('nt-meal').value='';
+  document.getElementById('notice-modal-title').textContent='📋 사전안내 만들기';
+  if(editId){
+    const n=DB.get('notices').find(x=>x.id===editId);
+    if(n){
+      document.getElementById('notice-edit-id').value=editId;
+      document.getElementById('nt-event-name').value=n.eventName||'';
+      document.getElementById('nt-manager').value=n.manager||'';
+      document.getElementById('nt-date').value=n.date||'';
+      document.getElementById('nt-location').value=n.location||'';
+      document.getElementById('nt-gather-place').value=n.gatherPlace||'';
+      document.getElementById('nt-gather-time').value=n.gatherTime||'';
+      document.getElementById('nt-dress').value=n.dress||'';
+      document.getElementById('nt-work-desc').value=n.workDesc||'';
+      document.getElementById('nt-work-time').value=n.workTime||'';
+      document.getElementById('nt-meal').value=n.meal||'';
+      document.getElementById('nt-caution').value=n.caution||'';
+      document.getElementById('nt-extra').value=n.extra||'';
+      document.getElementById('notice-modal-title').textContent='✏️ 사전안내 수정';
+    }
+  }
+  openModal('modal-notice');
+}
+
+function editNotice(id){openNoticeModal(id);}
+
+function saveNotice(){
+  const eventName=document.getElementById('nt-event-name').value.trim();
+  if(!eventName){toast('행사명을 입력하세요','error');return;}
+  const editId=document.getElementById('notice-edit-id').value;
+  const notices=DB.get('notices');
+  const data={
+    eventName,
+    manager:document.getElementById('nt-manager').value,
+    date:document.getElementById('nt-date').value,
+    location:document.getElementById('nt-location').value,
+    gatherPlace:document.getElementById('nt-gather-place').value,
+    gatherTime:document.getElementById('nt-gather-time').value,
+    dress:document.getElementById('nt-dress').value,
+    workDesc:document.getElementById('nt-work-desc').value,
+    workTime:document.getElementById('nt-work-time').value,
+    meal:document.getElementById('nt-meal').value,
+    caution:document.getElementById('nt-caution').value,
+    extra:document.getElementById('nt-extra').value,
+  };
+  if(editId){
+    const idx=notices.findIndex(x=>x.id===editId);
+    if(idx>-1){notices[idx]={...notices[idx],...data};DB.set('notices',notices);toast('사전안내가 수정되었습니다','success');}
+  } else {
+    notices.push({id:uid(),...data,createdAt:new Date().toISOString()});
+    DB.set('notices',notices);toast('사전안내가 저장되었습니다','success');
+  }
+  closeModal('modal-notice');render();
+}
+
+function deleteNotice(id){
+  if(!confirm('사전안내를 삭제하시겠습니까?')) return;
+  DB.set('notices',DB.get('notices').filter(n=>n.id!==id));
+  toast('삭제되었습니다','info');render();
+}
+
+function viewNotice(id){
+  const n=DB.get('notices').find(x=>x.id===id);
+  if(!n) return;
+  currentPrintNotice=n;
+  document.getElementById('notice-view-body').innerHTML=buildNoticePrint(n);
+  openModal('modal-notice-view');
+}
+
+function buildNoticePrint(n){
+  return `
+  <div id="notice-print-area" style="font-family:'Freesentation',sans-serif;max-width:620px;margin:0 auto">
+
+    <!-- 헤더 -->
+    <div style="background:linear-gradient(145deg,#0f172a 0%,#1e3a8a 60%,#312e81 100%);border-radius:18px;padding:28px 28px 24px;margin-bottom:22px;position:relative;overflow:hidden">
+      <div style="position:absolute;top:-30px;right:-30px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.04)"></div>
+      <div style="position:absolute;bottom:-20px;left:10px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.03)"></div>
+      <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:5px 14px;font-size:11px;font-weight:700;color:rgba(255,255,255,.8);letter-spacing:.08em;margin-bottom:14px">
+        ⚡ 사전 행사 안내문
+      </div>
+      <div style="font-size:24px;font-weight:900;color:#fff;margin-bottom:6px;letter-spacing:-.5px;line-height:1.3">${n.eventName}</div>
+      <div style="font-size:13px;color:rgba(255,255,255,.55)">📅 ${fmt(n.date)} &nbsp;·&nbsp; 📍 ${n.location}</div>
+    </div>
+
+    <!-- 핵심 정보 카드 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px">
+      <div style="background:#fff;border:1.5px solid #e4e8f0;border-radius:14px;padding:14px;text-align:center">
+        <div style="font-size:18px;margin-bottom:4px">⏰</div>
+        <div style="font-size:10px;font-weight:700;color:#9aa5bb;letter-spacing:.06em;margin-bottom:4px">집합 시간</div>
+        <div style="font-size:18px;font-weight:900;color:#3b6ef0;letter-spacing:-.5px">${n.gatherTime||'-'}</div>
+      </div>
+      <div style="background:#fff;border:1.5px solid #e4e8f0;border-radius:14px;padding:14px;text-align:center">
+        <div style="font-size:18px;margin-bottom:4px">🚩</div>
+        <div style="font-size:10px;font-weight:700;color:#9aa5bb;letter-spacing:.06em;margin-bottom:4px">집합 장소</div>
+        <div style="font-size:13px;font-weight:700;color:#1a2233;line-height:1.4">${n.gatherPlace||'-'}</div>
+      </div>
+      <div style="background:#fff;border:1.5px solid #e4e8f0;border-radius:14px;padding:14px;text-align:center">
+        <div style="font-size:18px;margin-bottom:4px">🕐</div>
+        <div style="font-size:10px;font-weight:700;color:#9aa5bb;letter-spacing:.06em;margin-bottom:4px">근무 시간</div>
+        <div style="font-size:13px;font-weight:700;color:#1a2233;line-height:1.4">${n.workTime||'-'}</div>
+      </div>
+    </div>
+
+    <!-- 상세 정보 테이블 -->
+    <div style="background:#fff;border:1.5px solid #e4e8f0;border-radius:14px;overflow:hidden;margin-bottom:16px">
+      ${ntRow('👔','복장',n.dress||'-')}
+      ${ntRow('🍱','식사',n.meal||'-')}
+      ${ntRow('📞','담당자',n.manager||'-')}
+    </div>
+
+    <!-- 업무 내용 -->
+    <div style="background:#f8f9fc;border:1.5px solid #e4e8f0;border-radius:14px;padding:18px;margin-bottom:14px">
+      <div style="font-size:13px;font-weight:800;color:#1a2233;margin-bottom:10px;display:flex;align-items:center;gap:8px">
+        <span style="background:#3b6ef0;color:#fff;border-radius:8px;padding:3px 10px;font-size:11px">💼 업무 내용</span>
+      </div>
+      <div style="font-size:14px;color:#1a2233;line-height:2;white-space:pre-wrap">${n.workDesc||'-'}</div>
+    </div>
+
+    <!-- 주의사항 -->
+    ${n.caution?`
+    <div style="background:#fef2f2;border:1.5px solid #fecaca;border-radius:14px;padding:16px;margin-bottom:14px">
+      <div style="font-size:13px;font-weight:800;color:#dc2626;margin-bottom:8px">⚠️ 주의사항 / 필수 지참물</div>
+      <div style="font-size:13px;color:#991b1b;line-height:2;white-space:pre-wrap">${n.caution}</div>
+    </div>`:''}
+
+    <!-- 추가 안내 -->
+    ${n.extra?`
+    <div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:14px;padding:16px;margin-bottom:14px">
+      <div style="font-size:13px;font-weight:800;color:#92400e;margin-bottom:8px">📌 추가 안내</div>
+      <div style="font-size:13px;color:#78350f;line-height:2;white-space:pre-wrap">${n.extra}</div>
+    </div>`:''}
+
+    <!-- 푸터 -->
+    <div style="display:flex;justify-content:space-between;align-items:center;padding-top:14px;border-top:1.5px solid #e4e8f0;font-size:12px;color:#9aa5bb;margin-top:8px">
+      <span>담당자: <strong style="color:#5a6a85">${n.manager||'-'}</strong></span>
+      <span>작성일: ${fmt(n.createdAt)}</span>
+    </div>
+  </div>`;
+}
+
+function ntRow(icon,label,val){
+  return `<div style="display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid #f1f4f9">
+    <span style="width:28px;text-align:center;font-size:15px;flex-shrink:0">${icon}</span>
+    <span style="font-size:12px;font-weight:700;color:#9aa5bb;width:60px;flex-shrink:0">${label}</span>
+    <span style="font-size:13px;color:#1a2233;font-weight:500">${val}</span>
+  </div>`;
+}
+
+function printNotice(){
+  const content=document.getElementById('notice-print-area')?.innerHTML;
+  if(!content) return;
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>사전안내문</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Freesentation:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Freesentation',sans-serif;padding:32px;background:#f8f9fc;color:#1a2233}
+  .wrap{max-width:640px;margin:0 auto;background:#fff;border-radius:18px;padding:32px;box-shadow:0 2px 20px rgba(0,0,0,.06)}
+  @media print{body{padding:0;background:#fff}.wrap{box-shadow:none;border-radius:0;padding:20px}}
+  <\/style>
+  </head><body><div class="wrap">${content}</div></body></html>`);
+  w.document.close(); setTimeout(()=>w.print(),700);
+}
+
+// ── Templates CRUD ─────────────────────────────────
+function openTemplateModal(){
+  document.getElementById('tmpl-edit-id').value='';
+  document.getElementById('tmpl-name').value='';
+  document.getElementById('tmpl-content').value=`행사 스태프 근로계약서
+
+행사명: {행사명}
+장소: {장소}
+날짜: {날짜}
+근무시간: {근무시간}
+급여: {급여}
+
+성명: {성명}
+
+본인은 위 행사에 성실히 참여할 것을 동의합니다.`;
+  document.getElementById('tmpl-modal-title').textContent='📄 새 계약서 템플릿';
+  openModal('modal-template');
+}
+
+function editTemplate(id){
+  const t=DB.get('templates').find(x=>x.id===id);
+  if(!t) return;
+  document.getElementById('tmpl-edit-id').value=id;
+  document.getElementById('tmpl-name').value=t.name;
+  document.getElementById('tmpl-content').value=t.content;
+  document.getElementById('tmpl-modal-title').textContent='✏️ 템플릿 수정';
+  openModal('modal-template');
+}
+
+function saveTemplate(){
+  const name=document.getElementById('tmpl-name').value.trim();
+  const content=document.getElementById('tmpl-content').value.trim();
+  if(!name||!content){toast('이름과 내용을 입력하세요','error');return;}
+  const editId=document.getElementById('tmpl-edit-id').value;
+  const tmpls=DB.get('templates');
+  if(editId){
+    const idx=tmpls.findIndex(t=>t.id===editId);
+    if(idx>-1){tmpls[idx]={...tmpls[idx],name,content};DB.set('templates',tmpls);toast('템플릿이 수정되었습니다','success');}
+  } else {
+    tmpls.push({id:uid(),name,content,createdAt:new Date().toISOString()});
+    DB.set('templates',tmpls);toast('템플릿이 저장되었습니다','success');
+  }
+  closeModal('modal-template');render();
+}
+
+function deleteTemplate(id){
+  if(!confirm('이 템플릿을 삭제하시겠습니까?')) return;
+  DB.set('templates',DB.get('templates').filter(t=>t.id!==id));
+  toast('삭제되었습니다','info');render();
+}
+
+// ── Contract Detail ────────────────────────────────
+function viewContractDetail(id){
+  const c=DB.get('contracts').find(x=>x.id===id);
+  if(!c) return;
+  const ev=DB.get('events').find(e=>e.id===c.eventId)||{};
+  currentPrintContract={c,ev};
+  const tmpl=DB.get('templates').find(t=>t.id===ev.templateId);
+  let contractText=tmpl?tmpl.content:`행사 스태프 근로계약서\n\n행사명: ${ev.name}\n장소: ${ev.location}\n날짜: ${fmt(ev.date)}\n근무시간: ${ev.startTime||''} ~ ${ev.endTime||''}\n급여: ${money(ev.pay)}\n\n성명: ${c.workerName}`;
+  contractText=contractText.replace('{행사명}',ev.name||'').replace('{장소}',ev.location||'').replace('{날짜}',fmt(ev.date)).replace('{근무시간}',(ev.startTime||'')+'~'+(ev.endTime||'')).replace('{급여}',money(ev.pay)).replace('{성명}',c.workerName);
+  document.getElementById('contract-view-body').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;font-size:13px">
+      <div class="card-sm"><span style="color:var(--t3)">이름</span><div style="font-weight:700;font-size:15px;margin-top:2px">${c.workerName}</div></div>
+      <div class="card-sm"><span style="color:var(--t3)">연락처</span><div style="font-weight:600;margin-top:2px">${c.phone}</div></div>
+      <div class="card-sm"><span style="color:var(--t3)">은행/계좌</span><div style="font-weight:600;margin-top:2px">${c.bankName} ${maskAccount(c.accountNumber)}</div></div>
+      <div class="card-sm"><span style="color:var(--t3)">서명 상태</span><div style="margin-top:4px"><span class="badge badge-${c.status==='signed'?'green':'amber'}">${c.status==='signed'?'✓ 서명완료':'⏳ 미서명'}</span></div></div>
+      <div class="card-sm" style="grid-column:span 2"><span style="color:var(--t3)">행사</span><div style="font-weight:600;margin-top:2px">${ev.name||'-'} · ${fmt(ev.date)} · ${ev.location||''}</div></div>
+    </div>
+    <div style="font-size:12px;font-weight:600;color:var(--t2);margin-bottom:8px">계약서 내용</div>
+    <div class="contract-preview">${contractText}</div>
+    ${c.signatureData&&c.signatureData.length>50?`
+    <div style="margin-top:16px">
+      <div style="font-size:12px;font-weight:600;color:var(--t2);margin-bottom:8px">전자서명</div>
+      <div style="background:var(--surface2);border-radius:8px;padding:10px;display:inline-block">
+        <img src="${c.signatureData}" style="max-width:200px;max-height:80px;display:block">
+      </div>
+      ${c.signedAt?`<div style="font-size:11px;color:var(--t3);margin-top:6px">서명 일시: ${fmtDT(c.signedAt)} · IP: ${c.ip||'-'}</div>`:''}
+    </div>`:'<div style="margin-top:12px;color:var(--t3);font-size:13px">아직 서명이 완료되지 않았습니다.</div>'}`;
+  openModal('modal-contract-view');
+}
+
+function printContract(){
+  if(!currentPrintContract) return;
+  const {c,ev}=currentPrintContract;
+  const tmpl=DB.get('templates').find(t=>t.id===ev.templateId);
+  let contractText=tmpl?tmpl.content:`행사 스태프 근로계약서\n\n행사명: ${ev.name}\n장소: ${ev.location}\n날짜: ${fmt(ev.date)}\n근무시간: ${ev.startTime||''} ~ ${ev.endTime||''}\n급여: ${money(ev.pay)}\n\n성명: ${c.workerName}`;
+  contractText=contractText.replace('{행사명}',ev.name||'').replace('{장소}',ev.location||'').replace('{날짜}',fmt(ev.date)).replace('{근무시간}',(ev.startTime||'')+'~'+(ev.endTime||'')).replace('{급여}',money(ev.pay)).replace('{성명}',c.workerName);
+  const w=window.open('','_blank');
+  w.document.write(`<html><head><title>계약서_${c.workerName}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Freesentation:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>*{box-sizing:border-box}body{font-family:'Freesentation',sans-serif;padding:40px;max-width:700px;margin:0 auto;color:#1a2233;font-size:14px;line-height:1.9}
+  h1{font-size:20px;text-align:center;margin-bottom:30px;font-weight:700}
+  .info-table{width:100%;border-collapse:collapse;margin-bottom:24px}
+  .info-table td{padding:10px 14px;border:1px solid #e4e8f0}
+  .info-table td:first-child{background:#f1f4f9;font-weight:600;width:120px;white-space:nowrap}
+  .contract-body{white-space:pre-wrap;margin:20px 0;line-height:2}
+  .sig-section{margin-top:40px;display:flex;justify-content:flex-end;align-items:flex-end;gap:20px}
+  @media print{body{padding:20px}}<\/style>
+  </head><body>
+  <h1>근로계약서</h1>
+  <table class="info-table">
+    <tr><td>성명</td><td>${c.workerName}</td><td>연락처</td><td>${c.phone}</td></tr>
+    <tr><td>행사명</td><td colspan="3">${ev.name||'-'}</td></tr>
+    <tr><td>날짜</td><td>${fmt(ev.date)}</td><td>장소</td><td>${ev.location||'-'}</td></tr>
+    <tr><td>근무시간</td><td>${(ev.startTime||'-')+' ~ '+(ev.endTime||'-')}</td><td>급여</td><td>${money(ev.pay)}</td></tr>
+    <tr><td>은행/계좌</td><td colspan="3">${c.bankName||'-'} ${maskAccount(c.accountNumber)}</td></tr>
+  </table>
+  <div class="contract-body">${contractText}</div>
+  <div class="sig-section">
+    <div style="text-align:center">
+      <div style="font-size:13px;color:#5a6a85;margin-bottom:8px">서명일시: ${c.signedAt?fmtDT(c.signedAt):'-'}</div>
+      ${c.signatureData&&c.signatureData.length>50?`<img src="${c.signatureData}" style="width:180px;height:70px;border-bottom:1px solid #1a2233;display:block">`:
+      '<div style="width:180px;height:70px;border-bottom:1px solid #1a2233"></div>'}
+      <div style="font-size:13px;margin-top:6px">서명인: ${c.workerName}</div>
+    </div>
+  </div>
+  </body></html>`);
+  w.document.close(); setTimeout(()=>w.print(),600);
+  toast('계약서 인쇄창이 열렸습니다','success');
+}
+
+function deleteContract(id){
+  if(!confirm('이 계약을 삭제하시겠습니까?')) return;
+  DB.set('contracts',DB.get('contracts').filter(c=>c.id!==id));
+  toast('삭제되었습니다','info');render();
+}
+
+// ── Excel Download ─────────────────────────────────
+function downloadExcel(){
+  const events=DB.get('events'), contracts=DB.get('contracts');
+  const rows=[['이름','연락처','은행명','계좌번호','행사명','날짜','근무시간','급여','서명여부','계약일시']];
+  contracts.forEach(c=>{
+    const ev=events.find(e=>e.id===c.eventId)||{};
+    rows.push([c.workerName,c.phone,c.bankName,c.accountNumber,ev.name||'',fmt(ev.date),(ev.startTime||'')+'~'+(ev.endTime||''),ev.pay||0,c.status==='signed'?'완료':'미서명',c.signedAt?fmtDT(c.signedAt):'-']);
+  });
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols']=[{wch:10},{wch:15},{wch:12},{wch:20},{wch:20},{wch:12},{wch:16},{wch:10},{wch:8},{wch:16}];
+  XLSX.utils.book_append_sheet(wb,ws,'계약자명단');
+  XLSX.writeFile(wb,'계약자명단_'+new Date().toLocaleDateString('ko-KR').replace(/\./g,'').replace(/ /g,'')+'.xlsx');
+  toast('엑셀 파일이 다운로드되었습니다','success');
+}
+
+function downloadCSV(){
+  const events=DB.get('events'), contracts=DB.get('contracts');
+  let csv='이름,연락처,은행명,행사명,날짜,급여,서명여부,계약일시\n';
+  contracts.forEach(c=>{
+    const ev=events.find(e=>e.id===c.eventId)||{};
+    csv+=`${c.workerName},${c.phone},${c.bankName},${ev.name||''},${fmt(ev.date)},${ev.pay||0},${c.status==='signed'?'완료':'미서명'},${c.signedAt?fmtDT(c.signedAt):'-'}\n`;
+  });
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='통계_'+Date.now()+'.csv'; a.click();
+  toast('CSV 파일이 다운로드되었습니다','success');
+}
+
+function downloadAllPDF(){
+  const contracts=DB.get('contracts');
+  if(!contracts.length){toast('계약 내역이 없습니다','error');return;}
+  toast('인쇄 창에서 전체 계약서를 PDF로 저장하세요','info');
+  const events=DB.get('events');
+  const w=window.open('','_blank');
+  let html=`<html><head><title>전체 계약서</title>
+  <link href="https://fonts.googleapis.com/css2?family=Freesentation:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>*{box-sizing:border-box}body{font-family:'Freesentation',sans-serif;font-size:13px;color:#1a2233}
+  .page{page-break-after:always;padding:40px;max-width:700px;margin:0 auto}
+  .page:last-child{page-break-after:auto}
+  h2{text-align:center;font-size:18px;margin-bottom:20px}
+  table{width:100%;border-collapse:collapse;margin-bottom:16px}
+  td{padding:8px 12px;border:1px solid #e4e8f0}td:first-child{background:#f1f4f9;font-weight:600;width:100px}
+  .body{white-space:pre-wrap;margin:16px 0;line-height:2}
+  .sig{margin-top:30px;text-align:right}
+  @media print{.page{padding:20px}}<\/style>
+  </head><body>`;
+  contracts.forEach(c=>{
+    const ev=events.find(e=>e.id===c.eventId)||{};
+    const tmpl=DB.get('templates').find(t=>t.id===ev.templateId);
+    let ct=tmpl?tmpl.content:`행사 스태프 근로계약서\n행사명: ${ev.name}\n성명: ${c.workerName}`;
+    ct=ct.replace('{행사명}',ev.name||'').replace('{장소}',ev.location||'').replace('{날짜}',fmt(ev.date)).replace('{근무시간}',(ev.startTime||'')+'~'+(ev.endTime||'')).replace('{급여}',money(ev.pay)).replace('{성명}',c.workerName);
+    html+=`<div class="page"><h2>근로계약서</h2>
+    <table>
+      <tr><td>성명</td><td>${c.workerName}</td><td>연락처</td><td>${c.phone}</td></tr>
+      <tr><td>행사명</td><td colspan="3">${ev.name||'-'}</td></tr>
+      <tr><td>급여</td><td>${money(ev.pay)}</td><td>서명여부</td><td>${c.status==='signed'?'완료':'미서명'}</td></tr>
+    </table>
+    <div class="body">${ct}</div>
+    <div class="sig">
+      ${c.signatureData&&c.signatureData.length>50?`<img src="${c.signatureData}" style="width:160px;height:60px;border-bottom:1px solid #1a2233;display:block;margin-left:auto">`:
+      '<div style="width:160px;height:60px;border-bottom:1px solid #1a2233;margin-left:auto"></div>'}
+      <div style="font-size:12px;margin-top:4px">서명인: ${c.workerName}</div>
+    </div>
+    </div>`;
+  });
+  html+='</body></html>';
+  w.document.write(html); w.document.close(); setTimeout(()=>w.print(),600);
+}
+
+// ── Sign Preview (premium redesigned) ─────────────
+function openSignPreview(eventId){
+  currentSignEvent=DB.get('events').find(e=>e.id===eventId);
+  if(!currentSignEvent){toast('행사를 찾을 수 없습니다','error');return;}
+  currentSignStep=1;
+  renderSignStep();
+  openModal('modal-sign');
+}
+
+function renderSignStep(){
+  const ev=currentSignEvent;
+  const tmpl=DB.get('templates').find(t=>t.id===ev.templateId);
+  let contractText=tmpl?tmpl.content:`행사 스태프 근로계약서\n\n행사명: ${ev.name}\n장소: ${ev.location}\n날짜: ${fmt(ev.date)}\n근무시간: ${ev.startTime||''} ~ ${ev.endTime||''}\n급여: ${money(ev.pay)}\n\n성명: {성명}`;
+
+  // Premium step indicator
+  const steps=['정보 입력','계약서 확인','전자서명'];
+  const stepBar=(active)=>`
+  <div style="display:flex;align-items:center;gap:0;margin-bottom:28px">
+    ${steps.map((s,i)=>{
+      const n=i+1;
+      const done=n<active, cur=n===active;
+      return `
+      <div style="display:flex;flex-direction:column;align-items:center;flex:1;position:relative">
+        ${i>0?`<div style="position:absolute;top:14px;right:50%;width:100%;height:2px;background:${done?'#3b6ef0':'#e4e8f0'};z-index:0"></div>`:''}
+        <div style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;z-index:1;
+          background:${done?'#3b6ef0':cur?'#3b6ef0':'#f1f4f9'};
+          color:${done||cur?'#fff':'#9aa5bb'};
+          box-shadow:${cur?'0 0 0 4px rgba(59,110,240,.15)':'none'};
+          transition:all .3s">
+          ${done?'✓':n}
+        </div>
+        <div style="font-size:11px;margin-top:5px;font-weight:${cur?'700':'400'};color:${cur?'#3b6ef0':'#9aa5bb'}">${s}</div>
+      </div>`;
+    }).join('')}
+  </div>`;
+
+  if(currentSignStep===1){
+    document.getElementById('sign-modal-body').innerHTML=`
+    <style>
+    .sn-hero{background:linear-gradient(145deg,#0f172a 0%,#1e3a8a 60%,#312e81 100%);border-radius:18px;padding:24px 20px;margin-bottom:22px;text-align:center;position:relative;overflow:hidden}
+    .sn-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.04)}
+    .sn-hero::after{content:'';position:absolute;bottom:-30px;left:-20px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.03)}
+    .sn-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:5px 14px;font-size:11px;font-weight:600;color:rgba(255,255,255,.8);margin-bottom:14px;letter-spacing:.03em}
+    .sn-title{font-size:20px;font-weight:800;color:#fff;margin-bottom:6px;letter-spacing:-.3px;line-height:1.3}
+    .sn-sub{font-size:12px;color:rgba(255,255,255,.55);margin-bottom:16px}
+    .sn-pay{display:inline-block;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:12px;padding:10px 20px}
+    .sn-pay-label{font-size:10px;color:rgba(255,255,255,.5);letter-spacing:.05em;text-transform:uppercase}
+    .sn-pay-val{font-size:22px;font-weight:800;color:#fff;margin-top:2px;letter-spacing:-.5px}
+    .sn-info-row{display:flex;gap:8px;margin-bottom:6px}
+    .sn-info-chip{flex:1;background:#f8f9fc;border:1px solid #e4e8f0;border-radius:10px;padding:10px 12px;text-align:center}
+    .sn-info-chip .lbl{font-size:10px;color:#9aa5bb;font-weight:600;letter-spacing:.04em}
+    .sn-info-chip .val{font-size:13px;font-weight:700;color:#1a2233;margin-top:2px}
+    .sn-field{margin-bottom:14px}
+    .sn-field label{display:block;font-size:12px;font-weight:700;color:#5a6a85;margin-bottom:6px;letter-spacing:.02em}
+    .sn-field input,.sn-field select{width:100%;padding:13px 16px;border:1.5px solid #e4e8f0;border-radius:12px;font-size:14px;font-family:'Freesentation',sans-serif;color:#1a2233;background:#fff;outline:none;transition:all .2s}
+    .sn-field input:focus,.sn-field select:focus{border-color:#3b6ef0;box-shadow:0 0 0 4px rgba(59,110,240,.1)}
+    .sn-field input::placeholder{color:#c4cdd9}
+    .sn-next{width:100%;padding:15px;background:linear-gradient(135deg,#3b6ef0,#6366f1);border:none;border-radius:14px;font-size:15px;font-weight:700;color:#fff;cursor:pointer;font-family:'Freesentation',sans-serif;letter-spacing:-.2px;margin-top:6px;transition:all .2s;box-shadow:0 4px 16px rgba(59,110,240,.35)}
+    .sn-next:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(59,110,240,.4)}
+    .sn-next:active{transform:translateY(0)}
+    .sn-time-bar{display:flex;gap:8px;margin-bottom:16px}
+    .sn-time-chip{flex:1;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:9px 12px;text-align:center}
+    .sn-time-chip .t-lbl{font-size:10px;color:#b45309;font-weight:600}
+    .sn-time-chip .t-val{font-size:13px;font-weight:800;color:#92400e;margin-top:2px}
+    .sn-cols2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    <\/style>
+    ${stepBar(1)}
+    <div class="sn-hero">
+      <div class="sn-badge">⚡ 전자 근로계약서</div>
+      <div class="sn-title">${ev.name}</div>
+      <div class="sn-sub">📍 ${ev.location} &nbsp;·&nbsp; 📅 ${fmt(ev.date)}</div>
+      <div class="sn-pay">
+        <div class="sn-pay-label">일급</div>
+        <div class="sn-pay-val">${money(ev.pay)}</div>
+      </div>
+    </div>
+    ${ev.gatherTime||ev.startTime?`
+    <div class="sn-time-bar">
+      <div class="sn-time-chip"><div class="t-lbl">⏰ 집합 시간</div><div class="t-val">${ev.gatherTime||'-'}</div></div>
+      <div class="sn-time-chip"><div class="t-lbl">🕐 근무 시간</div><div class="t-val">${ev.startTime||'-'} ~ ${ev.endTime||'-'}</div></div>
+    </div>`:''}
+    <div class="sn-field"><label>이름 *</label><input id="sign-name" placeholder="홍길동" autocomplete="name"></div>
+    <div class="sn-field"><label>전화번호 *</label><input id="sign-phone" type="tel" placeholder="010-0000-0000" autocomplete="tel"></div>
+    <div class="sn-cols2">
+      <div class="sn-field"><label>은행명</label>
+        <select id="sign-bank">
+          <option value="">선택</option>
+          ${['카카오뱅크','국민은행','신한은행','우리은행','하나은행','기업은행','농협','토스뱅크','케이뱅크','SC제일은행','씨티은행'].map(b=>`<option>${b}</option>`).join('')}
+        </select>
+      </div>
+      <div class="sn-field"><label>계좌번호</label><input id="sign-account" placeholder="계좌번호 입력"></div>
+    </div>
+    <button class="sn-next" onclick="signStep2()">계약서 확인하기 →</button>
+    <div style="text-align:center;margin-top:14px;font-size:11px;color:#9aa5bb">🔒 입력하신 정보는 암호화되어 안전하게 보관됩니다</div>`;
+
+  } else if(currentSignStep===2){
+    const name=window._signName||'';
+    let ct=contractText.replace('{성명}',name).replace('{행사명}',ev.name||'').replace('{장소}',ev.location||'').replace('{날짜}',fmt(ev.date)).replace('{근무시간}',(ev.startTime||'')+' ~ '+(ev.endTime||'')).replace('{급여}',money(ev.pay));
+    document.getElementById('sign-modal-body').innerHTML=`
+    <style>
+    .contract-scroll{background:#fafbff;border:1.5px solid #e4e8f0;border-radius:14px;padding:20px;font-size:13px;line-height:2;white-space:pre-wrap;max-height:280px;overflow-y:auto;color:#1a2233;font-family:'Freesentation',sans-serif}
+    .contract-scroll::-webkit-scrollbar{width:4px}.contract-scroll::-webkit-scrollbar-thumb{background:#d0d7e6;border-radius:2px}
+    .agree-box{display:flex;align-items:flex-start;gap:12px;margin:18px 0;padding:16px;background:linear-gradient(135deg,#eff3ff,#f5f3ff);border:1.5px solid #c7d2fe;border-radius:14px;cursor:pointer}
+    .agree-box input[type=checkbox]{width:20px;height:20px;accent-color:#3b6ef0;flex-shrink:0;margin-top:1px;cursor:pointer}
+    .agree-text{font-size:13px;color:#3730a3;font-weight:500;line-height:1.6}
+    .btn-row{display:flex;gap:10px;margin-top:4px}
+    .btn-back{flex:1;padding:13px;background:#f1f4f9;border:1.5px solid #e4e8f0;border-radius:12px;font-size:14px;font-weight:600;color:#5a6a85;cursor:pointer;font-family:'Freesentation',sans-serif;transition:all .15s}
+    .btn-back:hover{background:#e4e8f0}
+    .btn-fwd{flex:2;padding:13px;background:linear-gradient(135deg,#3b6ef0,#6366f1);border:none;border-radius:12px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;font-family:'Freesentation',sans-serif;box-shadow:0 4px 14px rgba(59,110,240,.3);transition:all .2s}
+    .btn-fwd:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(59,110,240,.4)}
+    <\/style>
+    ${stepBar(2)}
+    <div style="font-size:15px;font-weight:700;color:#1a2233;margin-bottom:4px">계약서를 끝까지 확인해 주세요</div>
+    <div style="font-size:12px;color:#9aa5bb;margin-bottom:14px">아래 내용에 동의하신 후 서명을 진행합니다</div>
+    <div class="contract-scroll">${ct}</div>
+    <label class="agree-box">
+      <input type="checkbox" id="sign-agree">
+      <span class="agree-text">위 계약 내용을 모두 확인하였으며 동의합니다.<br><span style="font-size:11px;color:#6366f1;font-weight:400">개인정보(성명·연락처·계좌) 수집 및 이용에 동의합니다.</span></span>
+    </label>
+    <div class="btn-row">
+      <button class="btn-back" onclick="currentSignStep=1;renderSignStep()">← 이전</button>
+      <button class="btn-fwd" onclick="signStep3()">동의하고 서명하기 →</button>
+    </div>`;
+
+  } else if(currentSignStep===3){
+    document.getElementById('sign-modal-body').innerHTML=`
+    <style>
+    .sig-wrap{background:linear-gradient(180deg,#fafbff 0%,#f1f4f9 100%);border:2px dashed #c7d2fe;border-radius:16px;padding:6px;position:relative;margin-bottom:10px}
+    .sig-hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;transition:opacity .2s}
+    .sig-hint-icon{font-size:28px;margin-bottom:6px;opacity:.3}
+    .sig-hint-text{font-size:12px;color:#9aa5bb}
+    #sig-canvas{border-radius:12px;cursor:crosshair;display:block;touch-action:none;width:100%;height:150px}
+    .sig-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+    .sig-clear{background:#f1f4f9;border:1.5px solid #e4e8f0;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;color:#5a6a85;cursor:pointer;font-family:'Freesentation',sans-serif}
+    .btn-submit{width:100%;padding:16px;background:linear-gradient(135deg,#059669,#10b981);border:none;border-radius:14px;font-size:16px;font-weight:800;color:#fff;cursor:pointer;font-family:'Freesentation',sans-serif;letter-spacing:-.3px;box-shadow:0 4px 20px rgba(16,185,129,.35);transition:all .2s}
+    .btn-submit:hover{transform:translateY(-1px);box-shadow:0 8px 28px rgba(16,185,129,.45)}
+    .btn-back2{width:100%;padding:12px;background:transparent;border:1.5px solid #e4e8f0;border-radius:12px;font-size:13px;font-weight:600;color:#9aa5bb;cursor:pointer;font-family:'Freesentation',sans-serif;margin-bottom:10px}
+    <\/style>
+    ${stepBar(3)}
+    <div style="font-size:15px;font-weight:700;color:#1a2233;margin-bottom:4px">전자서명</div>
+    <div style="font-size:12px;color:#9aa5bb;margin-bottom:14px">아래 박스 안에 손가락 또는 마우스로 서명해 주세요</div>
+    <div class="sig-wrap">
+      <canvas id="sig-canvas" width="500" height="150"></canvas>
+      <div class="sig-hint" id="sig-hint">
+        <div class="sig-hint-icon">✍️</div>
+        <div class="sig-hint-text">여기에 서명하세요</div>
+      </div>
+    </div>
+    <div class="sig-toolbar">
+      <span style="font-size:11px;color:#9aa5bb">서명은 본인 확인 및 법적 효력에 사용됩니다</span>
+      <button class="sig-clear" onclick="clearSig()">↺ 지우기</button>
+    </div>
+    <button class="btn-submit" onclick="submitSign()">✅ 계약 완료하기</button>
+    <button class="btn-back2" onclick="currentSignStep=2;renderSignStep()">← 이전으로</button>`;
+    setTimeout(initSigCanvas,100);
+
+  } else if(currentSignStep===4){
+    document.getElementById('sign-modal-body').innerHTML=`
+    <style>
+    @keyframes checkPop{0%{transform:scale(0) rotate(-10deg);opacity:0}60%{transform:scale(1.15) rotate(3deg)}100%{transform:scale(1) rotate(0deg);opacity:1}}
+    @keyframes fadeSlide{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+    .done-wrap{text-align:center;padding:20px 10px 10px}
+    .done-circle{width:84px;height:84px;background:linear-gradient(135deg,#059669,#10b981);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:38px;animation:checkPop .6s cubic-bezier(.175,.885,.32,1.275) forwards;box-shadow:0 8px 32px rgba(16,185,129,.35)}
+    .done-title{font-size:24px;font-weight:900;color:#059669;margin-bottom:8px;letter-spacing:-.5px;animation:fadeSlide .4s .2s both}
+    .done-sub{font-size:14px;color:#5a6a85;margin-bottom:24px;animation:fadeSlide .4s .3s both;line-height:1.7}
+    .done-card{background:linear-gradient(135deg,#f0fdfa,#ecfdf5);border:1.5px solid #a7f3d0;border-radius:16px;padding:18px;margin-bottom:16px;animation:fadeSlide .4s .4s both}
+    .done-card-title{font-size:12px;font-weight:700;color:#065f46;margin-bottom:10px;letter-spacing:.04em}
+    .done-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:5px 0;border-bottom:1px solid rgba(167,243,208,.6)}
+    .done-row:last-child{border-bottom:none}
+    .done-row .k{color:#6ee7b7;font-weight:600}.done-row .v{color:#065f46;font-weight:700}
+    .done-time{font-size:11px;color:#9aa5bb;margin-bottom:20px;animation:fadeSlide .4s .5s both}
+    .done-btn{width:100%;padding:14px;background:#f1f4f9;border:1.5px solid #e4e8f0;border-radius:12px;font-size:13px;font-weight:600;color:#5a6a85;cursor:pointer;font-family:'Freesentation',sans-serif;animation:fadeSlide .4s .6s both}
+    <\/style>
+    <div class="done-wrap">
+      <div class="done-circle">✓</div>
+      <div class="done-title">계약 완료!</div>
+      <div class="done-sub">서명이 성공적으로 등록되었습니다.<br>수고하셨습니다 😊</div>
+      <div class="done-card">
+        <div class="done-card-title">📋 계약 정보 요약</div>
+        <div class="done-row"><span class="k">행사명</span><span class="v">${ev.name}</span></div>
+        <div class="done-row"><span class="k">날짜</span><span class="v">${fmt(ev.date)}</span></div>
+        <div class="done-row"><span class="k">급여</span><span class="v">${money(ev.pay)}</span></div>
+        <div class="done-row"><span class="k">성명</span><span class="v">${window._signName||'서명자'}</span></div>
+      </div>
+      <div class="done-time">📄 계약서는 자동 저장됩니다 &nbsp;|&nbsp; ${new Date().toLocaleString('ko-KR')}</div>
+      <button class="done-btn" onclick="closeModal('modal-sign');navigate('contracts')">관리자 화면으로</button>
+    </div>`;
+  }
+}
+
+function signStep2(){
+  const name=document.getElementById('sign-name')?.value.trim();
+  const phone=document.getElementById('sign-phone')?.value.trim();
+  if(!name||!phone){toast('이름과 전화번호를 입력하세요','error');return;}
+  // store temporarily in dataset
+  document.getElementById('sign-name').dataset.val=name;
+  currentSignStep=2; renderSignStep();
+}
+
+function signStep3(){
+  if(!document.getElementById('sign-agree')?.checked){toast('계약 내용에 동의해야 합니다','error');return;}
+  currentSignStep=3; renderSignStep();
+}
+
+function initSigCanvas(){
+  sigCanvas=document.getElementById('sig-canvas');
+  if(!sigCanvas) return;
+  // fit canvas to actual display size
+  const rect=sigCanvas.getBoundingClientRect();
+  sigCanvas.width=rect.width||500; sigCanvas.height=150;
+  sigCtx=sigCanvas.getContext('2d');
+  sigCtx.strokeStyle='#1a2233'; sigCtx.lineWidth=3; sigCtx.lineCap='round'; sigCtx.lineJoin='round';
+  const hint=document.getElementById('sig-hint');
+  const getPos=(e)=>{
+    const r=sigCanvas.getBoundingClientRect();
+    const touch=e.touches?e.touches[0]:e;
+    return{x:(touch.clientX-r.left)*(sigCanvas.width/r.width),y:(touch.clientY-r.top)*(sigCanvas.height/r.height)};
+  };
+  const startDraw=(e)=>{isDrawing=true;if(hint)hint.style.opacity='0';const p=getPos(e);sigCtx.beginPath();sigCtx.moveTo(p.x,p.y);};
+  sigCanvas.addEventListener('mousedown',startDraw);
+  sigCanvas.addEventListener('mousemove',e=>{if(!isDrawing)return;const p=getPos(e);sigCtx.lineTo(p.x,p.y);sigCtx.stroke();});
+  sigCanvas.addEventListener('mouseup',()=>isDrawing=false);
+  sigCanvas.addEventListener('mouseleave',()=>isDrawing=false);
+  sigCanvas.addEventListener('touchstart',e=>{e.preventDefault();startDraw(e);},{passive:false});
+  sigCanvas.addEventListener('touchmove',e=>{e.preventDefault();if(!isDrawing)return;const p=getPos(e);sigCtx.lineTo(p.x,p.y);sigCtx.stroke();},{passive:false});
+  sigCanvas.addEventListener('touchend',()=>isDrawing=false);
+}
+
+function clearSig(){
+  if(sigCanvas&&sigCtx) sigCtx.clearRect(0,0,sigCanvas.width,sigCanvas.height);
+}
+
+function submitSign(){
+  if(!sigCanvas){toast('오류가 발생했습니다','error');return;}
+  const imgData=sigCanvas.toDataURL('image/png');
+  // check if canvas is blank
+  const blank=document.createElement('canvas'); blank.width=sigCanvas.width; blank.height=sigCanvas.height;
+  if(imgData===blank.toDataURL('image/png')){toast('서명을 입력해주세요','error');return;}
+  
+  // save contract (go back to step 1 data elements - they might be gone, store in step2)
+  // We'll find fields from the modal
+  const nameVal=currentSignStep===3?(document.querySelector('#sign-name')?.value||document.querySelector('[data-step-name]')?.textContent||'테스트'):'테스트';
+  // use stored values from dataset trick
+  const modalBody=document.getElementById('sign-modal-body');
+  
+  const contract={
+    id:uid(),
+    eventId:currentSignEvent.id,
+    workerName:window._signName||'서명자',
+    phone:window._signPhone||'-',
+    bankName:window._signBank||'-',
+    accountNumber:window._signAccount||'-',
+    signatureData:imgData,
+    signedAt:new Date().toISOString(),
+    status:'signed',
+    ip:'127.0.0.1'
+  };
+  const contracts=DB.get('contracts');
+  contracts.push(contract);
+  DB.set('contracts',contracts);
+  currentSignStep=4; renderSignStep();
+  toast('계약이 완료되었습니다!','success');
+}
+
+// patch step2 to store values
+const _origS2=signStep2;
+window.signStep2=function(){
+  const name=document.getElementById('sign-name')?.value.trim();
+  const phone=document.getElementById('sign-phone')?.value.trim();
+  if(!name||!phone){toast('이름과 전화번호를 입력하세요','error');return;}
+  window._signName=name;
+  window._signPhone=phone;
+  window._signBank=document.getElementById('sign-bank')?.value||'';
+  window._signAccount=document.getElementById('sign-account')?.value||'';
+  currentSignStep=2; renderSignStep();
+};
+
+// ── Toast ──────────────────────────────────────────
+function toast(msg,type='info'){
+  const el=document.createElement('div');
+  el.className='toast '+(type||'info');
+  el.innerHTML=(type==='success'?'✓ ':type==='error'?'✕ ':'ℹ ')+msg;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(()=>el.style.opacity='0',2500);
+  setTimeout(()=>el.remove(),2900);
+}
+
+// ── Hash routing (for sign links) ─────────────────
+function handleHash(){
+  const hash=window.location.hash;
+  if(hash.startsWith('#sign/')){
+    const token=hash.replace('#sign/','');
+    const ev=DB.get('events').find(e=>e.token===token);
+    if(ev){openSignPreview(ev.id);history.replaceState(null,'',window.location.pathname);}
+  }
+}
+
+// ── 🔐 사업자 정보 & 라이선스 잠금 시스템 ─────────────
+
+// 기본 관리자 비밀번호 (첫 실행 시 이 값 사용)
+const DEFAULT_OWNER_PW = 'dlalwls486!!';
+const OWNER_SESSION_KEY = 'cos_owner_unlocked';
+
+function getOwnerPW(){
+  return localStorage.getItem('cos_owner_pw') || DEFAULT_OWNER_PW;
+}
+
+function getOwnerInfo(){
+  return DB.getObj('owner_info');
+}
+
+function openOwnerPanel(){
+  // 세션에 인증된 경우 바로 편집 열기
+  if(sessionStorage.getItem(OWNER_SESSION_KEY)==='yes'){
+    openOwnerEdit(); return;
+  }
+  document.getElementById('owner-pw-input').value='';
+  openModal('modal-owner-lock');
+  setTimeout(()=>document.getElementById('owner-pw-input').focus(),200);
+}
+
+function verifyOwner(){
+  const pw=document.getElementById('owner-pw-input').value;
+  if(pw===getOwnerPW()){
+    sessionStorage.setItem(OWNER_SESSION_KEY,'yes');
+    closeModal('modal-owner-lock');
+    openOwnerEdit();
+    toast('관리자 인증 완료','success');
+  } else {
+    toast('비밀번호가 올바르지 않습니다','error');
+    document.getElementById('owner-pw-input').value='';
+    document.getElementById('owner-pw-input').focus();
+  }
+}
+
+function openOwnerEdit(){
+  const info=getOwnerInfo();
+  document.getElementById('ow-company').value=info.company||'경상북도 청도 복합문화공간 따시델레';
+  document.getElementById('ow-ceo').value=info.ceo||'';
+  document.getElementById('ow-biz-no').value=info.bizNo||'';
+  document.getElementById('ow-tel').value=info.tel||'';
+  document.getElementById('ow-email').value=info.email||'';
+  document.getElementById('ow-biz-type').value=info.bizType||'이벤트 행사 기획·운영';
+  document.getElementById('ow-address').value=info.address||'';
+  document.getElementById('ow-license').value=info.license||'';
+  document.getElementById('ow-pw-new').value='';
+  document.getElementById('ow-pw-confirm').value='';
+  openModal('modal-owner-edit');
+}
+
+function saveOwnerInfo(){
+  const company=document.getElementById('ow-company').value.trim();
+  if(!company){toast('회사명을 입력하세요','error');return;}
+  const pwNew=document.getElementById('ow-pw-new').value;
+  const pwCf=document.getElementById('ow-pw-confirm').value;
+  if(pwNew){
+    if(pwNew!==pwCf){toast('비밀번호가 일치하지 않습니다','error');return;}
+    if(pwNew.length<6){toast('비밀번호는 6자 이상이어야 합니다','error');return;}
+    localStorage.setItem('cos_owner_pw',pwNew);
+    toast('비밀번호가 변경되었습니다','success');
+  }
+  const info={
+    company,
+    ceo:document.getElementById('ow-ceo').value,
+    bizNo:document.getElementById('ow-biz-no').value,
+    tel:document.getElementById('ow-tel').value,
+    email:document.getElementById('ow-email').value,
+    bizType:document.getElementById('ow-biz-type').value,
+    address:document.getElementById('ow-address').value,
+    license:document.getElementById('ow-license').value,
+  };
+  DB.setObj('owner_info',info);
+  updateSidebarOwner(info);
+  closeModal('modal-owner-edit');
+  toast('사업자 정보가 저장되었습니다','success');
+}
+
+function lockOwner(){
+  sessionStorage.removeItem(OWNER_SESSION_KEY);
+  closeModal('modal-owner-edit');
+  toast('잠금되었습니다','info');
+}
+
+function genLicense(){
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const seg=()=>Array.from({length:4},()=>chars[Math.floor(Math.random()*chars.length)]).join('');
+  document.getElementById('ow-license').value=`COS-${seg()}-${seg()}-${seg()}`;
+}
+
+function updateSidebarOwner(info){
+  const el=document.getElementById('sb-company-name');
+  const el2=document.getElementById('sb-company-tel');
+  const el3=document.getElementById('sb-admin-email');
+  if(el) el.textContent=info.company||'따시델레';
+  if(el2) el2.textContent=info.tel||'클릭하여 사업자 정보 관리';
+  if(el3) el3.textContent=info.email||'admin@company.com';
+}
+
+// ── 라이선스 인증 ───────────────────────────────────
+function checkLicense(){
+  const key=document.getElementById('license-input').value.trim();
+  const info=getOwnerInfo();
+  const validKey=info.license||'';
+  // 데모 모드: 라이선스 미설정 시 항상 통과
+  if(!validKey||key===validKey||key==='DEMO'){
+    localStorage.setItem('cos_licensed','yes');
+    document.getElementById('modal-license-check').style.display='none';
+    toast('라이선스 인증 완료!','success');
+  } else {
+    toast('라이선스 키가 올바르지 않습니다. 구매처에 문의하세요.','error');
+  }
+}
+
+function checkLicenseOnLoad(){
+  // 라이선스가 설정된 경우에만 인증 화면 표시
+  const info=getOwnerInfo();
+  if(!info.license) return; // 라이선스 미설정 = 데모 모드
+  if(localStorage.getItem('cos_licensed')==='yes') return;
+  // 라이선스 미인증 고객에게 인증 화면 표시
+  const contactEl=document.getElementById('license-contact-email');
+  if(contactEl) contactEl.textContent=info.email||'구매처에 문의하세요';
+  document.getElementById('modal-license-check').style.display='flex';
+}
+
+
+function init(){
+  // ── 세션 체크: 로그인 안 된 경우 랜딩으로 이동 ──
+  const session = (()=>{try{return JSON.parse(localStorage.getItem('cos_session')||'null')}catch{return null}})();
+  if(!session){
+    const base = location.href.replace(/[^/]*$/, '');
+    location.href = base + 'index.html';
+    return;
+  }
+  // 상단바에 사용자 정보 표시
+  const adminNameEl = document.getElementById('sb-admin-name');
+  const adminEmailEl = document.getElementById('sb-admin-email');
+  if(adminNameEl) adminNameEl.textContent = session.name || '관리자';
+  if(adminEmailEl) adminEmailEl.textContent = session.email || '';
+  // 플랜 뱃지
+  const planBadge = document.createElement('div');
+  planBadge.style.cssText='display:inline-block;padding:2px 8px;background:rgba(99,102,241,.2);border:1px solid rgba(99,102,241,.3);border-radius:10px;font-size:10px;font-weight:700;color:#818cf8;margin-top:3px';
+  planBadge.textContent = (session.plan||'starter').toUpperCase();
+  adminEmailEl?.after(planBadge);
+
+  seedData();
+  const ownerInfo=getOwnerInfo();
+  updateSidebarOwner(ownerInfo);
+  checkLicenseOnLoad();
+  document.getElementById('current-date').textContent=new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'short'});
+  render();
+  handleHash();
+  window.addEventListener('hashchange',handleHash);
+}
+
+init();
+</script>
+</body>
+</html>

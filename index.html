@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ContractOS — 행사 전자계약 자동화 플랫폼</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Freesentation:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --navy:#0a0f1e;--navy2:#0f172a;--navy3:#1e2d4a;
+  --blue:#3b6ef0;--blue2:#6366f1;--blue3:#818cf8;
+  --teal:#0d9488;--green:#10b981;
+  --amber:#f59e0b;--red:#ef4444;
+  --gold:#e2b855;--gold2:#f5d98a;
+  --t1:#ffffff;--t2:rgba(255,255,255,.65);--t3:rgba(255,255,255,.35);
+  --border:rgba(255,255,255,.1);--border2:rgba(255,255,255,.18);
+  --surface:rgba(255,255,255,.06);--surface2:rgba(255,255,255,.1);
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Freesentation',sans-serif;
+  background:var(--navy);
+  color:var(--t1);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* ── 배경 파티클 효과 ── */
+#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5}
+
+/* ── 전체 레이아웃 ── */
+#page{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column}
+
+/* ── 네비게이션 ── */
+#nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  padding:16px 40px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(10,15,30,.7);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  transition:all .3s;
+}
+.nav-logo{display:flex;align-items:center;gap:10px}
+.nav-logo-icon{
+  width:36px;height:36px;
+  background:linear-gradient(135deg,var(--blue),var(--blue2));
+  border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;font-weight:900;color:#fff;
+  box-shadow:0 4px 16px rgba(59,110,240,.4);
+}
+.nav-logo-text{font-size:18px;font-weight:800;letter-spacing:-.5px}
+.nav-logo-text span{color:var(--blue3)}
+.nav-right{display:flex;align-items:center;gap:12px}
+.nav-btn{
+  padding:9px 22px;border-radius:10px;font-size:13px;font-weight:700;
+  cursor:pointer;font-family:inherit;transition:all .2s;border:none;
+}
+.nav-btn-ghost{
+  background:transparent;color:var(--t2);border:1.5px solid var(--border);
+}
+.nav-btn-ghost:hover{background:var(--surface);color:#fff;border-color:var(--border2)}
+.nav-btn-primary{
+  background:linear-gradient(135deg,var(--blue),var(--blue2));
+  color:#fff;
+  box-shadow:0 4px 16px rgba(59,110,240,.35);
+}
+.nav-btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(59,110,240,.5)}
+
+/* ── 히어로 섹션 ── */
+#hero{
+  min-height:100vh;
+  display:flex;align-items:center;justify-content:center;
+  padding:120px 40px 80px;
+  position:relative;
+  text-align:center;
+  flex-direction:column;
+  gap:0;
+}
+
+/* 빛나는 원형 bg */
+.hero-glow{
+  position:absolute;
+  border-radius:50%;
+  filter:blur(80px);
+  pointer-events:none;
+}
+.hero-glow-1{
+  width:600px;height:600px;
+  background:radial-gradient(circle,rgba(59,110,240,.18),transparent 70%);
+  top:-100px;left:50%;transform:translateX(-50%);
+}
+.hero-glow-2{
+  width:400px;height:400px;
+  background:radial-gradient(circle,rgba(99,102,241,.12),transparent 70%);
+  bottom:0;right:10%;
+}
+
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(59,110,240,.15);
+  border:1px solid rgba(59,110,240,.3);
+  border-radius:20px;padding:6px 18px;
+  font-size:12px;font-weight:700;color:var(--blue3);
+  letter-spacing:.04em;margin-bottom:28px;
+  animation:fadeUp .8s ease both;
+}
+.hero-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--blue3);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+
+.hero-title{
+  font-size:clamp(42px,6vw,72px);
+  font-weight:900;
+  line-height:1.1;
+  letter-spacing:-2px;
+  margin-bottom:16px;
+  animation:fadeUp .8s .1s ease both;
+}
+.hero-title-line1{display:block;color:#fff}
+.hero-title-line2{
+  display:block;
+  background:linear-gradient(135deg,var(--blue3),var(--gold2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.hero-slogan{
+  font-size:clamp(16px,2.5vw,22px);
+  font-weight:500;
+  color:var(--t2);
+  line-height:1.7;
+  max-width:600px;
+  margin:0 auto 16px;
+  animation:fadeUp .8s .2s ease both;
+}
+.hero-slogan strong{color:#fff;font-weight:700}
+.hero-slogan-sub{
+  font-size:14px;color:var(--t3);
+  margin-bottom:40px;
+  animation:fadeUp .8s .25s ease both;
+}
+
+.hero-cta{
+  display:flex;align-items:center;justify-content:center;gap:12px;
+  flex-wrap:wrap;
+  animation:fadeUp .8s .35s ease both;
+}
+.btn-hero-primary{
+  padding:16px 36px;
+  background:linear-gradient(135deg,var(--blue),var(--blue2));
+  border:none;border-radius:14px;
+  color:#fff;font-size:16px;font-weight:800;font-family:inherit;
+  cursor:pointer;transition:all .25s;
+  box-shadow:0 8px 32px rgba(59,110,240,.4);
+  letter-spacing:-.3px;
+}
+.btn-hero-primary:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(59,110,240,.55)}
+.btn-hero-primary:active{transform:translateY(0)}
+.btn-hero-secondary{
+  padding:16px 32px;
+  background:var(--surface);border:1.5px solid var(--border2);
+  border-radius:14px;
+  color:#fff;font-size:15px;font-weight:700;font-family:inherit;
+  cursor:pointer;transition:all .2s;
+}
+.btn-hero-secondary:hover{background:var(--surface2);border-color:rgba(255,255,255,.3)}
+
+/* 히어로 통계 */
+.hero-stats{
+  display:flex;align-items:center;gap:32px;
+  margin-top:60px;padding-top:40px;
+  border-top:1px solid var(--border);
+  animation:fadeUp .8s .5s ease both;
+  flex-wrap:wrap;justify-content:center;
+}
+.hero-stat-item{text-align:center}
+.hero-stat-num{font-size:28px;font-weight:900;color:#fff;letter-spacing:-1px}
+.hero-stat-label{font-size:12px;color:var(--t3);margin-top:2px;font-weight:600}
+
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(24px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+/* ── 화살표 스크롤 힌트 ── */
+.scroll-hint{
+  position:absolute;bottom:32px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  color:var(--t3);font-size:11px;font-weight:600;letter-spacing:.08em;
+  animation:bounce 2.5s infinite;
+}
+@keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(6px)}}
+.scroll-arrow{width:20px;height:20px;border-right:2px solid var(--t3);border-bottom:2px solid var(--t3);transform:rotate(45deg)}
+
+/* ── 피처 섹션 ── */
+#features{
+  padding:100px 40px;
+  background:linear-gradient(180deg,var(--navy) 0%,var(--navy2) 100%);
+  position:relative;
+}
+.section-label{
+  font-size:12px;font-weight:700;color:var(--blue3);
+  letter-spacing:.12em;text-transform:uppercase;
+  text-align:center;margin-bottom:14px;
+}
+.section-title{
+  font-size:clamp(28px,4vw,42px);font-weight:900;
+  text-align:center;letter-spacing:-1px;line-height:1.2;
+  margin-bottom:12px;
+}
+.section-sub{
+  text-align:center;font-size:16px;color:var(--t2);
+  max-width:520px;margin:0 auto 60px;line-height:1.7;
+}
+
+.features-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+  gap:16px;max-width:1100px;margin:0 auto;
+}
+.feature-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:28px;
+  transition:all .3s;
+  position:relative;overflow:hidden;
+}
+.feature-card::before{
+  content:'';position:absolute;inset:0;border-radius:20px;
+  background:linear-gradient(135deg,rgba(59,110,240,.06),transparent);
+  opacity:0;transition:opacity .3s;
+}
+.feature-card:hover{border-color:var(--border2);transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,.3)}
+.feature-card:hover::before{opacity:1}
+.feature-icon{
+  width:48px;height:48px;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;margin-bottom:18px;
+}
+.fi-blue{background:rgba(59,110,240,.2)}
+.fi-green{background:rgba(16,185,129,.2)}
+.fi-amber{background:rgba(245,158,11,.2)}
+.fi-purple{background:rgba(139,92,246,.2)}
+.fi-teal{background:rgba(13,148,136,.2)}
+.fi-red{background:rgba(239,68,68,.2)}
+.feature-title{font-size:17px;font-weight:700;margin-bottom:8px;color:#fff}
+.feature-desc{font-size:14px;color:var(--t2);line-height:1.7}
+
+/* ── 프라이싱 섹션 ── */
+#pricing{
+  padding:100px 40px;
+  background:var(--navy);
+}
+.pricing-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:20px;max-width:960px;margin:0 auto;
+}
+.pricing-card{
+  background:var(--surface);border:1.5px solid var(--border);
+  border-radius:24px;padding:32px;
+  position:relative;overflow:hidden;transition:all .3s;
+}
+.pricing-card:hover{transform:translateY(-4px)}
+.pricing-card.featured{
+  background:linear-gradient(145deg,rgba(59,110,240,.15),rgba(99,102,241,.1));
+  border-color:rgba(99,102,241,.4);
+  box-shadow:0 0 0 1px rgba(99,102,241,.2),0 20px 60px rgba(59,110,240,.2);
+}
+.pricing-badge{
+  position:absolute;top:20px;right:20px;
+  background:linear-gradient(135deg,var(--blue),var(--blue2));
+  color:#fff;font-size:11px;font-weight:700;
+  padding:4px 12px;border-radius:20px;letter-spacing:.04em;
+}
+.pricing-name{font-size:14px;font-weight:700;color:var(--t2);margin-bottom:12px;letter-spacing:.04em}
+.pricing-price{font-size:38px;font-weight:900;color:#fff;letter-spacing:-2px;line-height:1}
+.pricing-price span{font-size:16px;font-weight:500;color:var(--t2);letter-spacing:0}
+.pricing-desc{font-size:13px;color:var(--t3);margin:8px 0 24px;line-height:1.6}
+.pricing-divider{border:none;border-top:1px solid var(--border);margin-bottom:20px}
+.pricing-feature{
+  display:flex;align-items:center;gap:10px;
+  font-size:13px;color:var(--t2);margin-bottom:12px;
+}
+.pricing-feature-dot{
+  width:18px;height:18px;border-radius:50%;
+  background:rgba(16,185,129,.2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;flex-shrink:0;color:#10b981;
+}
+.pricing-btn{
+  width:100%;padding:13px;border-radius:12px;border:none;
+  font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;
+  margin-top:24px;transition:all .2s;
+}
+.pricing-btn-outline{
+  background:transparent;color:#fff;
+  border:1.5px solid var(--border2);
+}
+.pricing-btn-outline:hover{background:var(--surface2)}
+.pricing-btn-fill{
+  background:linear-gradient(135deg,var(--blue),var(--blue2));
+  color:#fff;box-shadow:0 4px 20px rgba(59,110,240,.35);
+}
+.pricing-btn-fill:hover{transform:translateY(-1px);box-shadow:0 8px 28px rgba(59,110,240,.5)}
+
+/* ── 로그인 모달 ── */
+#login-overlay{
+  position:fixed;inset:0;
+  background:rgba(5,8,20,.85);
+  backdrop-filter:blur(16px);
+  z-index:200;
+  display:none;
+  align-items:center;justify-content:center;
+  padding:20px;
+}
+#login-overlay.show{display:flex;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+#login-modal{
+  background:linear-gradient(145deg,#0f172a,#1a2540);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:28px;
+  width:100%;max-width:440px;
+  padding:0;
+  overflow:hidden;
+  box-shadow:0 32px 80px rgba(0,0,0,.6);
+  animation:modalPop .3s cubic-bezier(.175,.885,.32,1.275);
+}
+@keyframes modalPop{from{transform:scale(.9) translateY(20px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+
+.login-header{
+  background:linear-gradient(135deg,rgba(59,110,240,.2),rgba(99,102,241,.15));
+  padding:32px 36px 28px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+  text-align:center;
+  position:relative;
+}
+.login-close{
+  position:absolute;top:16px;right:16px;
+  width:32px;height:32px;border-radius:8px;
+  background:rgba(255,255,255,.08);border:none;
+  color:rgba(255,255,255,.5);font-size:16px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .15s;
+}
+.login-close:hover{background:rgba(255,255,255,.15);color:#fff}
+.login-logo-wrap{
+  width:60px;height:60px;border-radius:18px;
+  background:linear-gradient(135deg,var(--blue),var(--blue2));
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;font-weight:900;color:#fff;
+  margin:0 auto 16px;
+  box-shadow:0 8px 32px rgba(59,110,240,.5);
+}
+.login-title{font-size:22px;font-weight:800;color:#fff;letter-spacing:-.5px;margin-bottom:4px}
+.login-sub{font-size:13px;color:rgba(255,255,255,.45)}
+
+.login-body{padding:28px 36px 32px}
+.login-tabs{
+  display:flex;gap:4px;background:rgba(255,255,255,.06);
+  border-radius:12px;padding:4px;margin-bottom:24px;
+}
+.login-tab{
+  flex:1;padding:9px;border-radius:9px;
+  border:none;background:transparent;
+  color:rgba(255,255,255,.45);font-size:13px;font-weight:700;
+  cursor:pointer;font-family:inherit;transition:all .2s;
+}
+.login-tab.active{
+  background:linear-gradient(135deg,var(--blue),var(--blue2));
+  color:#fff;box-shadow:0 2px 10px rgba(59,110,240,.35);
+}
+
+.login-form{display:flex;flex-direction:column;gap:14px}
+.lf-group{display:flex;flex-direction:column;gap:6px}
+.lf-label{font-size:12px;font-weight:700;color:rgba(255,255,255,.45);letter-spacing:.04em}
+.lf-input{
+  width:100%;padding:13px 16px;
+  background:rgba(255,255,255,.07);
+  border:1.5px solid rgba(255,255,255,.1);
+  border-radius:12px;color:#fff;font-size:14px;font-family:inherit;
+  outline:none;transition:all .2s;
+}
+.lf-input::placeholder{color:rgba(255,255,255,.2)}
+.lf-input:focus{border-color:var(--blue);background:rgba(59,110,240,.12);box-shadow:0 0 0 4px rgba(59,110,240,.18)}
+.lf-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+.login-btn{
+  width:100%;padding:14px;border:none;border-radius:14px;
+  background:linear-gradient(135deg,var(--blue),var(--blue2));
+  color:#fff;font-size:15px;font-weight:800;font-family:inherit;
+  cursor:pointer;transition:all .2s;margin-top:4px;
+  box-shadow:0 6px 24px rgba(59,110,240,.4);
+  letter-spacing:-.2px;
+}
+.login-btn:hover{transform:translateY(-1px);box-shadow:0 10px 32px rgba(59,110,240,.5)}
+.login-btn:active{transform:scale(.98)}
+.login-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+.login-divider{
+  display:flex;align-items:center;gap:12px;margin:4px 0;
+  font-size:12px;color:rgba(255,255,255,.2);
+}
+.login-divider::before,.login-divider::after{
+  content:'';flex:1;height:1px;background:rgba(255,255,255,.08);
+}
+.login-error{
+  background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);
+  border-radius:10px;padding:10px 14px;
+  font-size:13px;color:#fca5a5;text-align:center;display:none;
+}
+.login-success{
+  background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);
+  border-radius:10px;padding:10px 14px;
+  font-size:13px;color:#6ee7b7;text-align:center;display:none;
+}
+.login-footer-text{
+  text-align:center;font-size:12px;color:rgba(255,255,255,.25);
+  margin-top:16px;line-height:1.7;
+}
+.login-footer-text a{color:rgba(99,102,241,.7);cursor:pointer}
+.login-footer-text a:hover{color:var(--blue3)}
+
+/* 구독 플랜 뱃지 */
+.plan-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.plan-chip{
+  padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;
+  cursor:pointer;transition:all .15s;border:1.5px solid transparent;
+}
+.plan-chip.basic{background:rgba(59,110,240,.15);color:#818cf8}
+.plan-chip.pro{background:rgba(245,158,11,.15);color:#fbbf24}
+.plan-chip.enterprise{background:rgba(16,185,129,.15);color:#34d399}
+.plan-chip.selected{border-color:currentColor}
+
+/* ── 푸터 ── */
+#footer{
+  background:var(--navy2);
+  border-top:1px solid var(--border);
+  padding:40px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:20px;
+}
+.footer-logo{font-size:16px;font-weight:800;color:#fff;letter-spacing:-.3px}
+.footer-logo span{color:var(--blue3)}
+.footer-copy{font-size:12px;color:var(--t3)}
+
+/* ── 반응형 ── */
+@media(max-width:640px){
+  #nav{padding:14px 20px}
+  #hero{padding:100px 20px 60px}
+  #features,#pricing{padding:60px 20px}
+  .hero-stats{gap:20px}
+  .login-body{padding:24px 24px 28px}
+  .login-header{padding:28px 24px 24px}
+  .lf-row{grid-template-columns:1fr}
+  #footer{padding:28px 20px}
+}
+
+/* ── 접속 상태 표시 ── */
+#session-bar{
+  position:fixed;top:72px;left:0;right:0;z-index:99;
+  background:linear-gradient(90deg,rgba(16,185,129,.9),rgba(5,150,105,.9));
+  color:#fff;font-size:13px;font-weight:600;
+  padding:10px 24px;display:none;
+  align-items:center;justify-content:space-between;
+  backdrop-filter:blur(8px);
+}
+#session-bar.show{display:flex}
+</style>
+</head>
+<body>
+
+<!-- 배경 캔버스 -->
+<canvas id="bg-canvas"></canvas>
+
+<!-- 세션 상태 바 -->
+<div id="session-bar">
+  <div id="session-info">✓ 로그인됨</div>
+  <div style="display:flex;gap:10px">
+    <button onclick="goToDashboard()" style="padding:6px 16px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);border-radius:8px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">대시보드 열기 →</button>
+    <button onclick="doLogout()" style="padding:6px 12px;background:transparent;border:1px solid rgba(255,255,255,.2);border-radius:8px;color:rgba(255,255,255,.7);font-size:12px;cursor:pointer;font-family:inherit">로그아웃</button>
+  </div>
+</div>
+
+<!-- 네비게이션 -->
+<nav id="nav">
+  <div class="nav-logo">
+    <div class="nav-logo-icon">C</div>
+    <div class="nav-logo-text">Contract<span>OS</span></div>
+  </div>
+  <div class="nav-right">
+    <button class="nav-btn nav-btn-ghost" onclick="scrollTo('#features')">기능</button>
+    <button class="nav-btn nav-btn-ghost" onclick="scrollTo('#pricing')">요금제</button>
+    <button class="nav-btn nav-btn-ghost" onclick="openLogin('login')">로그인</button>
+    <button class="nav-btn nav-btn-primary" onclick="openLogin('register')">무료 체험 시작 →</button>
+  </div>
+</nav>
+
+<!-- 히어로 -->
+<section id="hero">
+  <div class="hero-glow hero-glow-1"></div>
+  <div class="hero-glow hero-glow-2"></div>
+
+  <div class="hero-badge">
+    <div class="hero-badge-dot"></div>
+    행사 운영업체를 위한 전자계약 자동화
+  </div>
+
+  <h1 class="hero-title">
+    <span class="hero-title-line1">링크 하나로,</span>
+    <span class="hero-title-line2">계약이 완성된다</span>
+  </h1>
+
+  <p class="hero-slogan">
+    행사 링크를 보내면 <strong>스태프가 모바일에서 바로 서명</strong>.<br>
+    계약서는 자동 저장, 통계는 실시간.
+  </p>
+  <p class="hero-slogan-sub">출근 QR · 전자서명 · PDF 자동화 · 급여 정산까지 한 번에</p>
+
+  <div class="hero-cta">
+    <button class="btn-hero-primary" onclick="openLogin('register')">
+      ⚡ 지금 무료로 시작하기
+    </button>
+    <button class="btn-hero-secondary" onclick="openLogin('demo')">
+      🎮 데모 체험하기
+    </button>
+  </div>
+
+  <div class="hero-stats">
+    <div class="hero-stat-item">
+      <div class="hero-stat-num">5분</div>
+      <div class="hero-stat-label">행사 생성 → 계약 완료</div>
+    </div>
+    <div style="width:1px;height:36px;background:rgba(255,255,255,.1)"></div>
+    <div class="hero-stat-item">
+      <div class="hero-stat-num">100%</div>
+      <div class="hero-stat-label">모바일 최적화</div>
+    </div>
+    <div style="width:1px;height:36px;background:rgba(255,255,255,.1)"></div>
+    <div class="hero-stat-item">
+      <div class="hero-stat-num">0원</div>
+      <div class="hero-stat-label">초기 설치 비용</div>
+    </div>
+    <div style="width:1px;height:36px;background:rgba(255,255,255,.1)"></div>
+    <div class="hero-stat-item">
+      <div class="hero-stat-num">법적</div>
+      <div class="hero-stat-label">전자서명 효력 동일</div>
+    </div>
+  </div>
+
+  <div class="scroll-hint">
+    <span>SCROLL</span>
+    <div class="scroll-arrow"></div>
+  </div>
+</section>
+
+<!-- 기능 소개 -->
+<section id="features">
+  <div class="section-label">FEATURES</div>
+  <h2 class="section-title">행사 운영의 모든 것,<br>하나로 끝냅니다</h2>
+  <p class="section-sub">종이 계약서·수기 출석·수동 정산. 이제 전부 자동화하세요.</p>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon fi-blue">⚡</div>
+      <div class="feature-title">행사 생성 & 링크 발급</div>
+      <div class="feature-desc">행사명·장소·날짜·급여를 입력하면 계약 링크와 QR코드가 자동 생성됩니다. 카카오톡으로 바로 공유하세요.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-green">✍️</div>
+      <div class="feature-title">모바일 전자서명</div>
+      <div class="feature-desc">스태프는 링크만 열면 개인정보 입력 → 계약서 확인 → 손서명까지 3분 안에 완료. 앱 설치 불필요.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-amber">📋</div>
+      <div class="feature-title">사전안내문 발송</div>
+      <div class="feature-desc">집합장소·복장·업무내용·주의사항을 입력하면 세련된 안내문이 자동 생성. 인쇄·카카오 공유 즉시 가능.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-teal">📡</div>
+      <div class="feature-title">QR 출석체크</div>
+      <div class="feature-desc">태블릿 하나로 입구에서 QR 스캔 출석. 출근·퇴근·근무시간 자동 계산. 출석 엑셀 즉시 다운로드.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-purple">📊</div>
+      <div class="feature-title">실시간 통계 & 엑셀</div>
+      <div class="feature-desc">행사별 계약 현황·완료율·급여 총합을 대시보드에서 한눈에. 계약자 명단은 엑셀로 즉시 내보내기.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon fi-red">🔒</div>
+      <div class="feature-title">보안 & 암호화</div>
+      <div class="feature-desc">계좌번호·연락처 AES 암호화 저장. 서명 SHA-256 위변조 검증. 다운로드 감사 로그. 관리자 전용 접근 잠금.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 요금제 -->
+<section id="pricing">
+  <div class="section-label">PRICING</div>
+  <h2 class="section-title">합리적인 요금제</h2>
+  <p class="section-sub">무료로 시작하고, 성장에 맞춰 업그레이드하세요.</p>
+
+  <div class="pricing-grid">
+    <div class="pricing-card">
+      <div class="pricing-name">STARTER</div>
+      <div class="pricing-price">무료<span> / 월</span></div>
+      <div class="pricing-desc">소규모 행사 운영자를 위한 기본 플랜</div>
+      <hr class="pricing-divider">
+      <div class="pricing-feature"><div class="pricing-feature-dot">✓</div>월 행사 2건</div>
+      <div class="pricing-feature"><div class="pricing-feature-dot">✓</div>월 계약 20건</div>
+      <div class="pricing-feature"><div class="pricing-feature-dot">✓</div>계약서 템플릿 1개</div>
+      <div class="pricing-feature"><div class="pricing-feature-dot">✓</div>QR 출석체크</div>
+      <div class="pricing-feature"><div class="pricing-feature-dot" style="background:rgba(255,255,255,.05);color:rgba(255,255,255,.2)">✕</div><span style="color:rgba(255,255,255,.25)">사전안내문</span></div>
+      <button class="pricing-btn pricing-btn-outline" onclick="openLogin('register')">무료로 시작하기</button>
+    </div>
+
+    <div class="pricing-card featured">
+      <div class="pricing-badge">인기</div>
+      <div class="pricing-name">PRO</div>
+      <div class="pricing-price">49,000<span>원 / 월</span></div>
+      <div class="pricing-desc">전문 행사 운영업체를 위한 핵심 플랜</div>
+      <hr class="pricing-divider">
+      <div class="pricing-feature"><div class="pricing-feature-dot">✓</div>월 행사 무제한</div>
+      <div class="pricing-feature"><div class="pricing-feature-dot">✓</div>월 계약 300건</div>
+      <div class="pricing-feature"><div class="pricing-feature-dot">✓</div>계약서 템플릿 무제한</div>
+      <div class="pricing-feature"><div class="pricing-feature-dot">✓</div>QR 출석체크</div>
+      <div class="pricing-feature"><div class="pricing-feature-dot">✓</div>사전안내문 + 카카오 공유</div>
+      <div class="pricing-feature"><div class="pricing-feature-dot">✓</div>엑셀·PDF 자동화</div>
+      <div class="pricing-feature"><div class="pricing-feature-dot">✓</div>통계 대시보드</div>
+      <button class="pricing-btn pricing-btn-fill" onclick="openLogin('register')">PRO 시작하기 →</button>
+    </div>
+
+    <div class="pricing-card">
+      <div class="pricing-name">ENTERPRISE</div>
+      <div class="pricing-price">문의<span> / 월</span></div>
+      <div class="pricing-desc">대형 이벤트사·프랜차이즈를 위한 맞춤 플랜</div>
+      <hr class="pricing-divider">
+      <div class="pricing-feature"><div class="pricing-feature-dot">✓</div>계약 무제한</div>
+      <div class="pricing-feature"><div class="pricing-feature-dot">✓</div>다수 관리자 계정</div>
+      <div class="pricing-feature"><div class="pricing-feature-dot">✓</div>카카오 알림톡 연동</div>
+      <div class="pricing-feature"><div class="pricing-feature-dot">✓</div>급여 정산 자동화</div>
+      <div class="pricing-feature"><div class="pricing-feature-dot">✓</div>전담 고객 지원</div>
+      <div class="pricing-feature"><div class="pricing-feature-dot">✓</div>커스텀 브랜딩</div>
+      <button class="pricing-btn pricing-btn-outline" onclick="openLogin('contact')">도입 문의하기</button>
+    </div>
+  </div>
+</section>
+
+<!-- 푸터 -->
+<footer id="footer">
+  <div>
+    <div class="footer-logo">Contract<span>OS</span></div>
+    <div style="font-size:12px;color:rgba(255,255,255,.25);margin-top:4px">경상북도 청도 복합문화공간 따시델레</div>
+  </div>
+  <div class="footer-copy">© 2025 ContractOS. All rights reserved.</div>
+</footer>
+
+<!-- =================== 로그인 모달 =================== -->
+<div id="login-overlay" onclick="if(event.target===this)closeLogin()">
+  <div id="login-modal">
+    <div class="login-header">
+      <button class="login-close" onclick="closeLogin()">✕</button>
+      <div class="login-logo-wrap">C</div>
+      <div class="login-title">ContractOS</div>
+      <div class="login-sub" id="login-sub-text">계정에 로그인하세요</div>
+    </div>
+    <div class="login-body">
+      <!-- 탭 -->
+      <div class="login-tabs" id="login-tabs">
+        <button class="login-tab active" id="tab-login" onclick="switchTab('login')">로그인</button>
+        <button class="login-tab" id="tab-register" onclick="switchTab('register')">회원가입</button>
+      </div>
+
+      <!-- 오류/성공 메시지 -->
+      <div class="login-error" id="login-error"></div>
+      <div class="login-success" id="login-success"></div>
+
+      <!-- ── 로그인 폼 ── -->
+      <div id="form-login" class="login-form">
+        <div class="lf-group">
+          <div class="lf-label">이메일</div>
+          <input class="lf-input" id="l-email" type="email" placeholder="admin@company.com" autocomplete="email">
+        </div>
+        <div class="lf-group">
+          <div class="lf-label">비밀번호</div>
+          <input class="lf-input" id="l-pw" type="password" placeholder="비밀번호 입력"
+            onkeydown="if(event.key==='Enter')doLogin()">
+        </div>
+        <div style="display:flex;justify-content:flex-end">
+          <span style="font-size:12px;color:rgba(255,255,255,.3);cursor:pointer" onclick="showForgot()">비밀번호를 잊으셨나요?</span>
+        </div>
+        <button class="login-btn" onclick="doLogin()" id="btn-login">로그인</button>
+        <div class="login-divider">또는</div>
+        <div style="text-align:center">
+          <button onclick="doDemo()" style="background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.12);border-radius:12px;color:rgba(255,255,255,.6);font-size:13px;font-weight:600;padding:11px 24px;cursor:pointer;font-family:inherit;width:100%;transition:all .15s" onmouseover="this.style.background='rgba(255,255,255,.1)'" onmouseout="this.style.background='rgba(255,255,255,.06)'">
+            🎮 데모 계정으로 체험하기
+          </button>
+        </div>
+        <div class="login-footer-text">
+          계정이 없으신가요? <a onclick="switchTab('register')">회원가입</a>
+        </div>
+      </div>
+
+      <!-- ── 회원가입 폼 ── -->
+      <div id="form-register" class="login-form" style="display:none">
+
+        <!-- 단계 표시 -->
+        <div style="display:flex;gap:0;margin-bottom:18px">
+          <div style="flex:1;text-align:center">
+            <div id="step-dot-1" style="width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 4px">1</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.4);font-weight:600">기본정보</div>
+          </div>
+          <div style="flex:0.5;height:1px;background:rgba(255,255,255,.1);align-self:center;margin-bottom:14px"></div>
+          <div style="flex:1;text-align:center">
+            <div id="step-dot-2" style="width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.1);color:rgba(255,255,255,.3);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 4px">2</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.25);font-weight:600">사업자정보</div>
+          </div>
+          <div style="flex:0.5;height:1px;background:rgba(255,255,255,.1);align-self:center;margin-bottom:14px"></div>
+          <div style="flex:1;text-align:center">
+            <div id="step-dot-3" style="width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.1);color:rgba(255,255,255,.3);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 4px">3</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.25);font-weight:600">플랜선택</div>
+          </div>
+        </div>
+
+        <!-- STEP 1: 기본 정보 -->
+        <div id="reg-step-1">
+          <div class="lf-row">
+            <div class="lf-group">
+              <div class="lf-label">담당자 이름 *</div>
+              <input class="lf-input" id="r-name" placeholder="홍길동" autocomplete="name">
+            </div>
+            <div class="lf-group">
+              <div class="lf-label">연락처</div>
+              <input class="lf-input" id="r-phone" placeholder="010-0000-0000" type="tel">
+            </div>
+          </div>
+          <div class="lf-group">
+            <div class="lf-label">이메일 *</div>
+            <input class="lf-input" id="r-email" type="email" placeholder="admin@company.com" autocomplete="email">
+          </div>
+          <div class="lf-row">
+            <div class="lf-group">
+              <div class="lf-label">비밀번호 * (8자 이상)</div>
+              <input class="lf-input" id="r-pw" type="password" placeholder="비밀번호">
+            </div>
+            <div class="lf-group">
+              <div class="lf-label">비밀번호 확인 *</div>
+              <input class="lf-input" id="r-pw2" type="password" placeholder="동일하게 입력">
+            </div>
+          </div>
+          <button class="login-btn" onclick="regStep2()">다음 → 사업자 정보</button>
+        </div>
+
+        <!-- STEP 2: 사업자 정보 -->
+        <div id="reg-step-2" style="display:none">
+          <div style="background:rgba(59,110,240,.1);border:1px solid rgba(59,110,240,.2);border-radius:10px;padding:10px 14px;font-size:12px;color:rgba(255,255,255,.5);margin-bottom:14px">
+            📋 사업자 정보는 계약서 발급 및 서비스 이용 계약에 사용됩니다
+          </div>
+          <div class="lf-row">
+            <div class="lf-group">
+              <div class="lf-label">회사명 / 브랜드명 *</div>
+              <input class="lf-input" id="r-company" placeholder="(주)이벤트컴퍼니">
+            </div>
+            <div class="lf-group">
+              <div class="lf-label">사업자등록번호</div>
+              <input class="lf-input" id="r-bizno" placeholder="000-00-00000" maxlength="12">
+            </div>
+          </div>
+          <div class="lf-row">
+            <div class="lf-group">
+              <div class="lf-label">대표자명</div>
+              <input class="lf-input" id="r-ceo" placeholder="대표자 이름">
+            </div>
+            <div class="lf-group">
+              <div class="lf-label">업종 / 업태</div>
+              <input class="lf-input" id="r-biztype" placeholder="이벤트 기획·운영">
+            </div>
+          </div>
+          <div class="lf-group">
+            <div class="lf-label">사업장 주소</div>
+            <input class="lf-input" id="r-address" placeholder="상세 주소 (선택)">
+          </div>
+          <div style="display:flex;gap:8px;margin-top:4px">
+            <button onclick="regBack1()" style="flex:1;padding:12px;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.1);border-radius:12px;color:rgba(255,255,255,.5);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">← 이전</button>
+            <button class="login-btn" onclick="regStep3()" style="flex:2;margin-top:0">다음 → 플랜 선택</button>
+          </div>
+        </div>
+
+        <!-- STEP 3: 플랜 선택 + 라이선스 -->
+        <div id="reg-step-3" style="display:none">
+          <div class="lf-group">
+            <div class="lf-label">구독 플랜 선택</div>
+            <div class="plan-chips">
+              <div class="plan-chip basic selected" id="plan-starter" onclick="selectPlan('starter')">STARTER (무료)</div>
+              <div class="plan-chip pro" id="plan-pro" onclick="selectPlan('pro')">PRO ₩49,000/월</div>
+              <div class="plan-chip enterprise" id="plan-enterprise" onclick="selectPlan('enterprise')">ENTERPRISE</div>
+            </div>
+          </div>
+          <div class="lf-group">
+            <div class="lf-label">라이선스 키 (PRO/Enterprise 구매자 필수)</div>
+            <input class="lf-input" id="r-license" placeholder="COS-XXXX-XXXX-XXXX" style="font-family:monospace">
+            <div style="font-size:11px;color:rgba(255,255,255,.25);margin-top:4px">라이선스 키는 구매 후 이메일로 발송됩니다. STARTER는 입력 불필요.</div>
+          </div>
+          <div style="background:rgba(255,255,255,.05);border-radius:10px;padding:12px 14px;font-size:12px;color:rgba(255,255,255,.4);margin-bottom:4px;line-height:1.7">
+            ☑ 서비스 이용약관 및 개인정보처리방침에 동의합니다<br>
+            ☑ 수집된 사업자 정보는 서비스 이용 계약 목적으로만 사용됩니다
+          </div>
+          <div style="display:flex;gap:8px;margin-top:4px">
+            <button onclick="regBack2()" style="flex:1;padding:12px;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.1);border-radius:12px;color:rgba(255,255,255,.5);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">← 이전</button>
+            <button class="login-btn" onclick="doRegister()" id="btn-register" style="flex:2;margin-top:0">계정 만들기 →</button>
+          </div>
+        </div>
+
+        <div class="login-footer-text" style="margin-top:14px">
+          이미 계정이 있으신가요? <a onclick="switchTab('login')">로그인</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────
+// DB — localStorage 기반 사용자 계정 관리
+// ─────────────────────────────────────────────────────
+const AuthDB = {
+  getUsers(){ try{return JSON.parse(localStorage.getItem('cos_users')||'[]')}catch{return[]} },
+  setUsers(v){ localStorage.setItem('cos_users', JSON.stringify(v)) },
+  getSession(){ try{return JSON.parse(localStorage.getItem('cos_session')||'null')}catch{return null} },
+  setSession(v){ localStorage.setItem('cos_session', JSON.stringify(v)) },
+  clearSession(){ localStorage.removeItem('cos_session') }
+};
+
+const uid = () => Math.random().toString(36).slice(2,10) + Date.now().toString(36);
+
+// ─────────────────────────────────────────────────────
+// 플랜 선택
+// ─────────────────────────────────────────────────────
+let selectedPlan = 'starter';
+function selectPlan(plan){
+  selectedPlan = plan;
+  document.querySelectorAll('.plan-chip').forEach(c => c.classList.remove('selected'));
+  document.getElementById('plan-'+plan)?.classList.add('selected');
+}
+
+// ─────────────────────────────────────────────────────
+// 모달 열기/닫기
+// ─────────────────────────────────────────────────────
+function openLogin(tab='login'){
+  const overlay = document.getElementById('login-overlay');
+  overlay.classList.add('show');
+  clearMessages();
+  if(tab === 'register' || tab === 'demo'){
+    if(tab === 'demo'){ switchTab('login'); doDemo(); }
+    else switchTab('register');
+  } else if(tab === 'contact'){
+    switchTab('login');
+    showMsg('도입 문의는 아래 이메일로 연락해 주세요: contractos@company.com', 'success');
+  } else {
+    switchTab('login');
+  }
+  // 열릴 때 첫 입력창 포커스
+  setTimeout(()=>{
+    const first = document.querySelector('#form-login:not([style*="none"]) .lf-input, #form-register:not([style*="none"]) .lf-input');
+    first?.focus();
+  }, 300);
+}
+
+function closeLogin(){
+  document.getElementById('login-overlay').classList.remove('show');
+}
+
+function scrollTo(selector){
+  document.querySelector(selector)?.scrollIntoView({behavior:'smooth'});
+}
+
+// ─────────────────────────────────────────────────────
+// 탭 전환
+// ─────────────────────────────────────────────────────
+function switchTab(tab){
+  const isLogin = tab === 'login';
+  document.getElementById('form-login').style.display = isLogin ? 'flex' : 'none';
+  document.getElementById('form-register').style.display = isLogin ? 'none' : 'flex';
+  document.getElementById('tab-login').classList.toggle('active', isLogin);
+  document.getElementById('tab-register').classList.toggle('active', !isLogin);
+  document.getElementById('login-sub-text').textContent = isLogin ? '계정에 로그인하세요' : '새 계정을 만드세요';
+  clearMessages();
+}
+
+function clearMessages(){
+  const err = document.getElementById('login-error');
+  const suc = document.getElementById('login-success');
+  err.style.display = 'none'; err.textContent = '';
+  suc.style.display = 'none'; suc.textContent = '';
+}
+
+function showMsg(msg, type='error'){
+  const el = document.getElementById(type==='error'?'login-error':'login-success');
+  el.textContent = msg; el.style.display = 'block';
+}
+
+// ─────────────────────────────────────────────────────
+// 로그인
+// ─────────────────────────────────────────────────────
+function doLogin(){
+  clearMessages();
+  const email = document.getElementById('l-email').value.trim().toLowerCase();
+  const pw = document.getElementById('l-pw').value;
+  if(!email || !pw){ showMsg('이메일과 비밀번호를 입력하세요'); return; }
+
+  const users = AuthDB.getUsers();
+  const user = users.find(u => u.email === email);
+  if(!user){ showMsg('등록되지 않은 이메일입니다'); return; }
+  if(user.pw !== hashPW(pw)){ showMsg('비밀번호가 올바르지 않습니다'); return; }
+
+  // 세션 생성
+  const session = { userId:user.id, email:user.email, name:user.name, company:user.company, plan:user.plan, loginAt:new Date().toISOString() };
+  AuthDB.setSession(session);
+
+  showMsg(`${user.name}님, 환영합니다! 잠시 후 대시보드로 이동합니다.`, 'success');
+  setTimeout(() => {
+    closeLogin();
+    goToDashboard();
+  }, 1200);
+}
+
+// ─────────────────────────────────────────────────────
+// 회원가입
+// ─────────────────────────────────────────────────────
+function doRegister(){
+  clearMessages();
+  const name = document.getElementById('r-name').value.trim();
+  const company = document.getElementById('r-company').value.trim();
+  const email = document.getElementById('r-email').value.trim().toLowerCase();
+  const pw = document.getElementById('r-pw').value;
+  const pw2 = document.getElementById('r-pw2').value;
+  const license = document.getElementById('r-license').value.trim();
+
+  if(!name || !company || !email || !pw){ showMsg('필수 항목을 모두 입력하세요'); return; }
+  if(pw.length < 8){ showMsg('비밀번호는 8자 이상이어야 합니다'); return; }
+  if(pw !== pw2){ showMsg('비밀번호가 일치하지 않습니다'); return; }
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ showMsg('올바른 이메일 형식을 입력하세요'); return; }
+
+  const users = AuthDB.getUsers();
+  if(users.find(u => u.email === email)){ showMsg('이미 사용 중인 이메일입니다'); return; }
+
+  // 라이선스 키 검증
+  let plan = 'starter';
+  if(license){
+    // 관리자가 설정한 라이선스 키와 비교
+    const ownerInfo = JSON.parse(localStorage.getItem('cos_owner_info') || '{}');
+    const validKey = ownerInfo.license || '';
+    if(validKey && license === validKey){
+      plan = selectedPlan === 'starter' ? 'pro' : selectedPlan;
+    } else if(license.toUpperCase() === 'DEMO'){
+      plan = 'pro';
+    } else {
+      showMsg('유효하지 않은 라이선스 키입니다. STARTER로 시작하거나 구매처에 문의하세요');
+      return;
+    }
+  } else {
+    plan = 'starter';
+  }
+
+  const newUser = {
+    id: uid(), name, company, email, pw: hashPW(pw), plan,
+    createdAt: new Date().toISOString()
+  };
+  users.push(newUser);
+  AuthDB.setUsers(users);
+
+  // 자동 로그인
+  const session = { userId:newUser.id, email, name, company, plan, loginAt:new Date().toISOString() };
+  AuthDB.setSession(session);
+
+  showMsg(`가입 완료! ${name}님 환영합니다. 대시보드로 이동합니다.`, 'success');
+  setTimeout(() => {
+    closeLogin();
+    goToDashboard();
+  }, 1200);
+}
+
+// ─────────────────────────────────────────────────────
+// 데모 계정 로그인
+// ─────────────────────────────────────────────────────
+function doDemo(){
+  const demoEmail = 'demo@contractos.kr';
+  const demoPW = 'demo1234';
+  let users = AuthDB.getUsers();
+  let demo = users.find(u => u.email === demoEmail);
+  if(!demo){
+    demo = { id:'demo', name:'데모 관리자', company:'ContractOS 데모', email:demoEmail, pw:hashPW(demoPW), plan:'pro', createdAt:new Date().toISOString() };
+    users.push(demo);
+    AuthDB.setUsers(users);
+  }
+  const session = { userId:'demo', email:demoEmail, name:'데모 관리자', company:'ContractOS 데모', plan:'pro', loginAt:new Date().toISOString() };
+  AuthDB.setSession(session);
+  closeLogin();
+  goToDashboard();
+}
+
+// ─────────────────────────────────────────────────────
+// 비밀번호 분실
+// ─────────────────────────────────────────────────────
+function showForgot(){
+  showMsg('비밀번호 재설정: contractos@company.com 으로 이메일 아이디를 보내주세요.', 'success');
+}
+
+// ─────────────────────────────────────────────────────
+// 로그아웃
+// ─────────────────────────────────────────────────────
+function doLogout(){
+  AuthDB.clearSession();
+  document.getElementById('session-bar').classList.remove('show');
+  window.location.reload();
+}
+
+// ─────────────────────────────────────────────────────
+// 대시보드 이동 (contract-saas.html)
+// ─────────────────────────────────────────────────────
+function goToDashboard(){
+  const session = AuthDB.getSession();
+  if(!session){ openLogin(); return; }
+  // contract-saas.html로 이동 (같은 폴더)
+  const base = location.href.replace(/[^/]*$/, '');
+  window.location.href = base + 'contract-saas.html';
+}
+
+// ─────────────────────────────────────────────────────
+// 간단한 해시 (실제 서비스는 bcrypt 사용)
+// ─────────────────────────────────────────────────────
+function hashPW(pw){
+  // 간단한 obfuscation (실제 서버에서는 반드시 bcrypt 사용)
+  let hash = 0;
+  const salt = 'contractos_salt_2025';
+  const str = pw + salt;
+  for(let i=0; i<str.length; i++){
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return 'h' + Math.abs(hash).toString(36) + str.length.toString(36);
+}
+
+// ─────────────────────────────────────────────────────
+// 세션 체크 (이미 로그인된 경우 상태바 표시)
+// ─────────────────────────────────────────────────────
+function checkSession(){
+  const session = AuthDB.getSession();
+  if(!session) return;
+  const bar = document.getElementById('session-bar');
+  const info = document.getElementById('session-info');
+  bar.classList.add('show');
+  info.innerHTML = `✓ <strong>${session.name}</strong> (${session.company}) · <span style="background:rgba(255,255,255,.15);padding:2px 8px;border-radius:10px;font-size:11px">${(session.plan||'starter').toUpperCase()}</span>`;
+}
+
+// ─────────────────────────────────────────────────────
+// 배경 파티클 애니메이션
+// ─────────────────────────────────────────────────────
+function initBgCanvas(){
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles = [];
+
+  function resize(){
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  // 파티클 생성
+  for(let i=0; i<70; i++){
+    particles.push({
+      x: Math.random()*W, y: Math.random()*H,
+      r: Math.random()*1.5+0.3,
+      dx: (Math.random()-.5)*.3,
+      dy: (Math.random()-.5)*.3,
+      opacity: Math.random()*.5+.1
+    });
+  }
+
+  // 연결선 그리기
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    particles.forEach(p=>{
+      p.x += p.dx; p.y += p.dy;
+      if(p.x<0||p.x>W) p.dx*=-1;
+      if(p.y<0||p.y>H) p.dy*=-1;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(99,102,241,${p.opacity})`;
+      ctx.fill();
+    });
+    // 가까운 파티클 연결
+    for(let i=0; i<particles.length; i++){
+      for(let j=i+1; j<particles.length; j++){
+        const dx = particles[i].x-particles[j].x;
+        const dy = particles[i].y-particles[j].y;
+        const dist = Math.sqrt(dx*dx+dy*dy);
+        if(dist < 130){
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.strokeStyle = `rgba(59,110,240,${(1-dist/130)*.08})`;
+          ctx.lineWidth = .5;
+          ctx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// ─────────────────────────────────────────────────────
+// 스크롤 네비 효과
+// ─────────────────────────────────────────────────────
+function initScrollEffect(){
+  window.addEventListener('scroll', ()=>{
+    const nav = document.getElementById('nav');
+    if(window.scrollY > 60){
+      nav.style.background = 'rgba(10,15,30,.92)';
+      nav.style.borderBottomColor = 'rgba(255,255,255,.12)';
+    } else {
+      nav.style.background = 'rgba(10,15,30,.7)';
+    }
+  });
+}
+
+// ─────────────────────────────────────────────────────
+// 숫자 카운트업 애니메이션 (통계)
+// ─────────────────────────────────────────────────────
+function initCountUp(){
+  const observer = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        // 피처 카드 등장
+        e.target.style.opacity='1';
+        e.target.style.transform='translateY(0)';
+      }
+    });
+  }, {threshold:.1});
+
+  document.querySelectorAll('.feature-card,.pricing-card').forEach((el,i)=>{
+    el.style.opacity='0';
+    el.style.transform='translateY(24px)';
+    el.style.transition=`all .5s ${i*.07}s ease`;
+    observer.observe(el);
+  });
+}
+
+// ─────────────────────────────────────────────────────
+// 초기화
+// ─────────────────────────────────────────────────────
+initBgCanvas();
+initScrollEffect();
+initCountUp();
+checkSession();
+
+// URL 파라미터로 자동 모달 열기
+const urlParams = new URLSearchParams(location.search);
+if(urlParams.get('login') === '1') openLogin('login');
+if(urlParams.get('register') === '1') openLogin('register');
+</script>
+</body>
+</html>
